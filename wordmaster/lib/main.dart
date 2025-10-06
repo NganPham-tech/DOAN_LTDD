@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
-import 'screens/deck_list_screen.dart';
+import 'screens/home/home_screen.dart';
+import 'screens/flashcard/flashcard_overview_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -41,10 +41,10 @@ class _MainNavigationState extends State<MainNavigation> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const DeckListScreen(),
-    Container(), // Quiz Screen - để trống
-    Container(), // Progress Screen - để trống
-    Container(), // Profile Screen - để trống
+    const FlashcardOverviewScreen(),
+    const QuizPlaceholderScreen(),
+    const ProgressPlaceholderScreen(),
+    const ProfilePlaceholderScreen(),
   ];
 
   @override
@@ -83,6 +83,95 @@ class _MainNavigationState extends State<MainNavigation> {
             label: 'Hồ sơ',
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Placeholder screens
+class FlashcardPlaceholderScreen extends StatelessWidget {
+  const FlashcardPlaceholderScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Flashcard'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text(
+          'Flashcard Screen\n(Đang phát triển)',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
+    );
+  }
+}
+
+class QuizPlaceholderScreen extends StatelessWidget {
+  const QuizPlaceholderScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Quiz'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text(
+          'Quiz Screen\n(Đang phát triển)',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
+    );
+  }
+}
+
+class ProgressPlaceholderScreen extends StatelessWidget {
+  const ProgressPlaceholderScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Tiến độ'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text(
+          'Progress Screen\n(Đang phát triển)',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
+    );
+  }
+}
+
+class ProfilePlaceholderScreen extends StatelessWidget {
+  const ProfilePlaceholderScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Hồ sơ'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text(
+          'Profile Screen\n(Đang phát triển)',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        ),
       ),
     );
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/deck.dart';
-import '../models/study_session.dart';
 
 class SessionResultScreen extends StatelessWidget {
   final Deck deck;
@@ -40,11 +39,7 @@ class SessionResultScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.emoji_events,
-              size: 80,
-              color: Colors.amber,
-            ),
+            const Icon(Icons.emoji_events, size: 80, color: Colors.amber),
             const SizedBox(height: 24),
             Text(
               message,
@@ -96,10 +91,7 @@ class SessionResultScreen extends StatelessWidget {
                     _buildStatRow('Tổng số thẻ:', '$totalCards thẻ'),
                     _buildStatRow('Đã nhớ:', '$rememberedCount thẻ'),
                     _buildStatRow('Thời gian:', '${studyDuration ~/ 60} phút'),
-                    _buildStatRow(
-                      'Lần ôn tiếp theo:',
-                      'Ngày mai',
-                    ),
+                    _buildStatRow('Lần ôn tiếp theo:', 'Ngày mai'),
                   ],
                 ),
               ),
@@ -139,10 +131,7 @@ class SessionResultScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
           Text(value),
         ],
       ),

@@ -83,6 +83,7 @@ class _DeckListScreenState extends State<DeckListScreen> {
           description: '500 từ vựng giao tiếp hàng ngày',
           isPublic: true,
           createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
           cardCount: 500,
           learnedCount: 150,
           isFavorite: true,
@@ -97,6 +98,7 @@ class _DeckListScreenState extends State<DeckListScreen> {
           description: 'Từ vựng cho các tình huống du lịch',
           isPublic: true,
           createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
           cardCount: 300,
           learnedCount: 45,
           isFavorite: false,
@@ -111,6 +113,7 @@ class _DeckListScreenState extends State<DeckListScreen> {
           description: 'Tiếng Anh thương mại và công sở',
           isPublic: true,
           createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
           cardCount: 450,
           learnedCount: 0,
           isFavorite: true,
@@ -126,6 +129,7 @@ class _DeckListScreenState extends State<DeckListScreen> {
           description: 'Bộ từ vựng tự tạo',
           isPublic: false,
           createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
           cardCount: 50,
           learnedCount: 25,
           isFavorite: false,
@@ -140,6 +144,7 @@ class _DeckListScreenState extends State<DeckListScreen> {
           description: 'Từ vựng IELTS band 7.0+',
           isPublic: true,
           createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
           cardCount: 600,
           learnedCount: 120,
           isFavorite: false,
@@ -163,14 +168,23 @@ class _DeckListScreenState extends State<DeckListScreen> {
 
     // Lọc theo category
     if (selectedCategory != null && selectedCategory!.categoryID != 1) {
-      filtered = filtered.where((deck) => deck.categoryID == selectedCategory!.categoryID).toList();
+      filtered = filtered
+          .where((deck) => deck.categoryID == selectedCategory!.categoryID)
+          .toList();
     }
 
     // Lọc theo tìm kiếm
     if (searchQuery.isNotEmpty) {
-      filtered = filtered.where((deck) =>
-          deck.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          deck.description.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+      filtered = filtered
+          .where(
+            (deck) =>
+                deck.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                (deck.description?.toLowerCase().contains(
+                      searchQuery.toLowerCase(),
+                    ) ??
+                    false),
+          )
+          .toList();
     }
 
     // Lọc chỉ deck của user
@@ -238,10 +252,12 @@ class _DeckListScreenState extends State<DeckListScreen> {
             ),
             items: categories
                 .where((cat) => cat.categoryID != 1)
-                .map((category) => DropdownMenuItem(
-                      value: category.categoryID,
-                      child: Text(category.name),
-                    ))
+                .map(
+                  (category) => DropdownMenuItem(
+                    value: category.categoryID,
+                    child: Text(category.name),
+                  ),
+                )
                 .toList(),
             onChanged: (value) {},
           ),
@@ -324,7 +340,8 @@ class _DeckListScreenState extends State<DeckListScreen> {
                   padding: const EdgeInsets.only(right: 8),
                   child: FilterChip(
                     label: Text(category.name),
-                    selected: selectedCategory?.categoryID == category.categoryID,
+                    selected:
+                        selectedCategory?.categoryID == category.categoryID,
                     onSelected: (selected) {
                       setState(() {
                         selectedCategory = selected ? category : categories[0];
@@ -358,15 +375,15 @@ class _DeckListScreenState extends State<DeckListScreen> {
           ),
           // Deck Count
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: Row(
               children: [
                 Text(
                   '${filteredDecks.length} bộ thẻ',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ],
             ),
@@ -398,12 +415,12 @@ class _DeckListScreenState extends State<DeckListScreen> {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: _getCategoryColor(deck.categoryID).withOpacity(0.1),
+            color: _getCategoryColor(deck.categoryID ?? 1).withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
             child: Text(
-              _getCategoryIcon(deck.categoryID),
+              _getCategoryIcon(deck.categoryID ?? 1),
               style: const TextStyle(fontSize: 20),
             ),
           ),
@@ -428,10 +445,7 @@ class _DeckListScreenState extends State<DeckListScreen> {
                 ),
                 child: const Text(
                   'Của tôi',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.blue,
-                  ),
+                  style: TextStyle(fontSize: 10, color: Colors.blue),
                 ),
               ),
           ],
@@ -440,7 +454,7 @@ class _DeckListScreenState extends State<DeckListScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text(deck.description),
+            Text(deck.description ?? 'Không có mô tả'),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -452,10 +466,7 @@ class _DeckListScreenState extends State<DeckListScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  deck.progressText,
-                  style: const TextStyle(fontSize: 12),
-                ),
+                Text(deck.progressText, style: const TextStyle(fontSize: 12)),
               ],
             ),
             const SizedBox(height: 4),
@@ -489,11 +500,7 @@ class _DeckListScreenState extends State<DeckListScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.folder_open,
-            size: 64,
-            color: Colors.grey,
-          ),
+          const Icon(Icons.folder_open, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
           const Text(
             'Không tìm thấy bộ thẻ nào',
@@ -554,37 +561,5 @@ class _DeckListScreenState extends State<DeckListScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-}
-
-extension DeckCopyWith on Deck {
-  Deck copyWith({
-    int? deckID,
-    int? userID,
-    int? categoryID,
-    String? name,
-    String? description,
-    bool? isPublic,
-    DateTime? createdAt,
-    int? cardCount,
-    int? learnedCount,
-    bool? isFavorite,
-    bool? isUserCreated,
-    String? authorName,
-  }) {
-    return Deck(
-      deckID: deckID ?? this.deckID,
-      userID: userID ?? this.userID,
-      categoryID: categoryID ?? this.categoryID,
-      name: name ?? this.name,
-      description: description ?? this.description,
-      isPublic: isPublic ?? this.isPublic,
-      createdAt: createdAt ?? this.createdAt,
-      cardCount: cardCount ?? this.cardCount,
-      learnedCount: learnedCount ?? this.learnedCount,
-      isFavorite: isFavorite ?? this.isFavorite,
-      isUserCreated: isUserCreated ?? this.isUserCreated,
-      authorName: authorName ?? this.authorName,
-    );
   }
 }

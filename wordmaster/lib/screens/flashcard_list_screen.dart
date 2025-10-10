@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'flashcard_study_screen.dart';
 import '../models/deck.dart';
 import '../models/flashcard.dart';
-import '../models/study_session.dart';
+
 // Đảm bảo FlashcardListScreen có thể nhận Deck object
 
 class FlashcardListScreen extends StatefulWidget {
@@ -16,7 +16,7 @@ class FlashcardListScreen extends StatefulWidget {
 
 class _FlashcardListScreenState extends State<FlashcardListScreen> {
   List<Flashcard> flashcards = [];
-  CardStatus _currentFilter = CardStatus.fresh;
+  CardStatus _currentFilter = CardStatus.newCard;
 
   @override
   void initState() {
@@ -30,40 +30,43 @@ class _FlashcardListScreenState extends State<FlashcardListScreen> {
       flashcards = [
         Flashcard(
           flashcardID: 1,
-          deckID: widget.deck.deckID,
+          deckID: widget.deck.deckID ?? 1,
           question: 'Apple',
           answer: 'Quả táo',
           example: 'I eat an apple every day.',
-          audioPath: '',
           imagePath: '',
           status: CardStatus.learning,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         ),
         Flashcard(
           flashcardID: 2,
-          deckID: widget.deck.deckID,
+          deckID: widget.deck.deckID ?? 1,
           question: 'Book',
           answer: 'Quyển sách',
           example: 'This is an interesting book.',
-          audioPath: '',
           imagePath: '',
-          status: CardStatus.fresh,
+          status: CardStatus.newCard,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         ),
         Flashcard(
           flashcardID: 3,
-          deckID: widget.deck.deckID,
+          deckID: widget.deck.deckID ?? 1,
           question: 'Computer',
           answer: 'Máy tính',
           example: 'I use computer for work.',
-          audioPath: '',
           imagePath: '',
           status: CardStatus.mastered,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         ),
       ];
     });
   }
 
   List<Flashcard> get _filteredFlashcards {
-    if (_currentFilter == CardStatus.fresh) {
+    if (_currentFilter == CardStatus.newCard) {
       return flashcards;
     }
     return flashcards.where((card) => card.status == _currentFilter).toList();
@@ -84,9 +87,7 @@ class _FlashcardListScreenState extends State<FlashcardListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.deck.name),
-      ),
+      appBar: AppBar(title: Text(widget.deck.name)),
       body: Column(
         children: [
           // Filter Buttons
@@ -96,10 +97,11 @@ class _FlashcardListScreenState extends State<FlashcardListScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => setState(() => _currentFilter = CardStatus.fresh),
+                    onPressed: () =>
+                        setState(() => _currentFilter = CardStatus.newCard),
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: _currentFilter == CardStatus.fresh 
-                          ? Colors.blue.withOpacity(0.1) 
+                      backgroundColor: _currentFilter == CardStatus.newCard
+                          ? Colors.blue.withOpacity(0.1)
                           : null,
                     ),
                     child: const Text('Tất cả'),
@@ -108,10 +110,11 @@ class _FlashcardListScreenState extends State<FlashcardListScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => setState(() => _currentFilter = CardStatus.learning),
+                    onPressed: () =>
+                        setState(() => _currentFilter = CardStatus.learning),
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: _currentFilter == CardStatus.learning 
-                          ? Colors.orange.withOpacity(0.1) 
+                      backgroundColor: _currentFilter == CardStatus.learning
+                          ? Colors.orange.withOpacity(0.1)
                           : null,
                     ),
                     child: const Text('Đang học'),
@@ -120,10 +123,11 @@ class _FlashcardListScreenState extends State<FlashcardListScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => setState(() => _currentFilter = CardStatus.mastered),
+                    onPressed: () =>
+                        setState(() => _currentFilter = CardStatus.mastered),
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: _currentFilter == CardStatus.mastered 
-                          ? Colors.green.withOpacity(0.1) 
+                      backgroundColor: _currentFilter == CardStatus.mastered
+                          ? Colors.green.withOpacity(0.1)
                           : null,
                     ),
                     child: const Text('Đã thuộc'),
@@ -163,7 +167,7 @@ class _FlashcardListScreenState extends State<FlashcardListScreen> {
   Widget _buildFlashcardItem(Flashcard flashcard) {
     Color statusColor = Colors.grey;
     String statusText = 'Mới';
-    
+
     switch (flashcard.status) {
       case CardStatus.learning:
         statusColor = Colors.orange;
@@ -173,9 +177,13 @@ class _FlashcardListScreenState extends State<FlashcardListScreen> {
         statusColor = Colors.green;
         statusText = 'Đã thuộc';
         break;
-      case CardStatus.fresh:
+      case CardStatus.newCard:
         statusColor = Colors.blue;
         statusText = 'Mới';
+        break;
+      case CardStatus.review:
+        statusColor = Colors.purple;
+        statusText = 'Ôn tập';
         break;
     }
 

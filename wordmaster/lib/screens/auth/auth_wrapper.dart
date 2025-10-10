@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/simple_firebase_user_provider.dart';
 import 'login_screen.dart';
-import '../../main.dart';
+import '../home/home_screen.dart';
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
@@ -59,7 +59,7 @@ class AuthWrapper extends StatelessWidget {
 
         // If user is logged in, show main app
         if (userProvider.isLoggedIn) {
-          return const MainNavigation();
+          return const HomeScreen();
         }
 
         // If user is not logged in, show login screen

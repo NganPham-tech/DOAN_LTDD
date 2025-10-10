@@ -1,34 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/flashcard/flashcard_overview_screen.dart';
-import 'screens/profile_screen.dart';
-import 'screens/auth/auth_wrapper.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/auth/register_screen.dart';
-import 'providers/simple_firebase_user_provider.dart';
-import 'themes/app_theme.dart';
-import 'providers/category_provider.dart';
-import 'providers/deck_provider.dart';
-import 'providers/flashcard_provider.dart';
-import 'providers/settings_provider.dart';
-import 'data/api_texttospeach.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Firebase
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // Load environment variables  
-  await dotenv.load(fileName: ".env");
-
-  // Initialize Text-to-Speech
-  await TextToSpeechApi.init();
-
+void main() {
   runApp(const MyApp());
 }
 
@@ -37,32 +11,167 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => SimpleFirebaseUserProvider()),
-        ChangeNotifierProvider(
-          create: (_) => CategoryProvider()..loadCategories(),
+    return MaterialApp(
+      title: 'WordMaster',
+      theme: ThemeData(
+        primaryColor: const Color(0xFFd63384),
+        primaryColorDark: const Color(0xFFa61e4d),
+        primaryColorLight: const Color(0xFFf06595),
+        secondaryHeaderColor: const Color(0xFFae3ec9),
+        scaffoldBackgroundColor: const Color(0xFFfff0f6),
+        colorScheme: ColorScheme.fromSwatch().copyWith(
+          secondary: const Color(0xFFae3ec9),
         ),
-        ChangeNotifierProvider(
-          create: (_) => DeckProvider()..loadDecks(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => FlashcardProvider()..loadFlashcards(),
-        ),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
-      ],
-      child: MaterialApp(
-        title: 'WordMaster',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        home: const AuthWrapper(),
-        routes: {
-          '/login': (context) => const LoginScreen(),
-          '/register': (context) => const RegisterScreen(),
-          '/home': (context) => const HomeScreen(),
-          '/profile': (context) => const ProfileScreen(),
+        fontFamily: 'Inter',
+      ),
+      home: const MainNavigation(),
+    );
+  }
+}
+
+class MainNavigation extends StatefulWidget {
+  const MainNavigation({super.key});
+
+  @override
+  _MainNavigationState createState() => _MainNavigationState();
+}
+
+class _MainNavigationState extends State<MainNavigation> {
+  int _currentIndex = 0;
+
+  final List<Widget> _screens = [
+    const HomeScreen(),
+    const FlashcardOverviewScreen(),
+    const QuizPlaceholderScreen(),
+    const ProgressPlaceholderScreen(),
+    const ProfilePlaceholderScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _screens[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Theme.of(context).primaryColor,
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
         },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Trang chủ',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.flash_on),
+            label: 'Flashcard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.quiz),
+            label: 'Quiz',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.timeline),
+            label: 'Tiến độ',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Hồ sơ',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Placeholder screens
+class FlashcardPlaceholderScreen extends StatelessWidget {
+  const FlashcardPlaceholderScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Flashcard'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text(
+          'Flashcard Screen\n(Đang phát triển)',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
+    );
+  }
+}
+
+class QuizPlaceholderScreen extends StatelessWidget {
+  const QuizPlaceholderScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Quiz'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text(
+          'Quiz Screen\n(Đang phát triển)',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
+    );
+  }
+}
+
+class ProgressPlaceholderScreen extends StatelessWidget {
+  const ProgressPlaceholderScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Tiến độ'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text(
+          'Progress Screen\n(Đang phát triển)',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
+    );
+  }
+}
+
+class ProfilePlaceholderScreen extends StatelessWidget {
+  const ProfilePlaceholderScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Hồ sơ'),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text(
+          'Profile Screen\n(Đang phát triển)',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        ),
       ),
     );
   }

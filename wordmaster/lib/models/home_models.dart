@@ -1,3 +1,39 @@
+class User {
+  final String id;
+  final String email;
+  final String fullName;
+  final String username;
+  final String phone;
+  final String avatar;
+
+  User({
+    required this.id,
+    required this.email,
+    required this.fullName,
+    required this.username,
+    this.phone = '',
+    this.avatar = '',
+  });
+
+  User copyWith({
+    String? id,
+    String? email,
+    String? fullName,
+    String? username,
+    String? phone,
+    String? avatar,
+  }) {
+    return User(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      username: username ?? this.username,
+      phone: phone ?? this.phone,
+      avatar: avatar ?? this.avatar,
+    );
+  }
+}
+
 class UserProgress {
   final int totalLearned;
   final int currentStreak;

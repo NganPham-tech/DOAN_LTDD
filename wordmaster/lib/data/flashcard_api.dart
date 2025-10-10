@@ -82,7 +82,7 @@ class FlashcardAPI {
       categoryId: categoryId,
       name: 'Deck ${categoryId * 10 + index}',
       description: 'Bộ thẻ từ vựng chủ đề ${categoryId * 10 + index}',
-      thumbnail: 'https://picsum.photos/200/150?random=${categoryId * 10 + index}',
+      thumbnail: null,
       totalCards: 20 + index * 5,
       learnedCards: index * 3,
       rating: 4.5 - index * 0.1,
@@ -104,7 +104,7 @@ class FlashcardAPI {
           ? 'Hello, how are you today? This is example $index'
           : 'I go to school every day. Example $index',
       phonetic: deckId < 50 ? '/həˈloʊ/' : null,
-      imagePath: deckId < 50 ? 'https://picsum.photos/200/150?random=$index' : null,
+      imagePath: null,
       difficulty: ['Easy', 'Medium', 'Hard'][index % 3],
       wordType: deckId < 50 ? ['Noun', 'Verb', 'Adjective'][index % 3] : null,
     ));

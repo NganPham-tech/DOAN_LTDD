@@ -64,26 +64,15 @@ class _FlashcardDeckListScreenState extends State<FlashcardDeckListScreen> {
         child: Row(
           children: [
             // Thumbnail
-            if (deck.thumbnail != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  deck.thumbnail!,
-                  width: 80,
-                  height: 60,
-                  fit: BoxFit.cover,
-                ),
-              )
-            else
-              Container(
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'images/timo.jpg',
                 width: 80,
                 height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.photo_library, color: Colors.grey),
+                fit: BoxFit.cover,
               ),
+            ),
             
             const SizedBox(width: 16),
             

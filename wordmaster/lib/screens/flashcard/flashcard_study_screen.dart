@@ -306,9 +306,10 @@ class _FlashcardStudyScreenState extends State<FlashcardStudyScreen> with Single
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (isVocabulary && card.imagePath != null)
-              Image.network(
-                card.imagePath!,
+              Image.asset(
+                'images/timo.jpg',
                 height: 120,
+                width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => 
                   Container(

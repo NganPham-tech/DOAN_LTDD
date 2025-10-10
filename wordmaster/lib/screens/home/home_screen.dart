@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../flashcard/flashcard_overview_screen.dart';
+import '../dictation/dictation_list_screen.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -31,13 +32,13 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'id': 1,
       'title': 'TOEIC Essential 500',
-      'thumbnail': 'https://picsum.photos/100/100',
+      'thumbnail': null,
       'cardsCount': 500
     },
     {
       'id': 2,
       'title': 'Business English',
-      'thumbnail': 'https://picsum.photos/100/101',
+      'thumbnail': null,
       'cardsCount': 300
     },
   ];
@@ -129,9 +130,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               onPressed: () {},
             ),
-            const CircleAvatar(
+            CircleAvatar(
               radius: 18,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/100'),
+              backgroundColor: Color(0xFFd63384),
+              child: Icon(
+                Icons.person,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ],
         ),
@@ -369,7 +375,10 @@ class _HomeScreenState extends State<HomeScreen> {
         // Navigator.push(context, MaterialPageRoute(builder: (_) => QuizScreen()));
         break;
       case 'Dictation':
-        // Navigator.push(context, MaterialPageRoute(builder: (_) => DictationScreen()));
+        Navigator.push(
+          context, 
+          MaterialPageRoute(builder: (_) => const DictationListScreen())
+        );
         break;
       case 'Shadowing':
         // Navigator.push(context, MaterialPageRoute(builder: (_) => ShadowingScreen()));
@@ -430,8 +439,8 @@ class _HomeScreenState extends State<HomeScreen> {
               topLeft: Radius.circular(12),
               topRight: Radius.circular(12),
             ),
-            child: Image.network(
-              deck['thumbnail'],
+            child: Image.asset(
+              'images/timo.jpg',
               height: 80,
               width: double.infinity,
               fit: BoxFit.cover,

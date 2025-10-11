@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/user_provider.dart';
+import '../providers/simple_firebase_user_provider.dart';
 import '../providers/settings_provider.dart';
+import 'auth/login_screen.dart';
+import 'auth/register_screen.dart';
+import 'edit_profile_screen.dart';
+import 'notification_settings_screen.dart';
+import 'help_center_screen.dart';
+import 'language_settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -14,9 +20,18 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Consumer<UserProvider>(
+      body: Consumer<SimpleFirebaseUserProvider>(
         builder: (context, userProvider, _) {
+          // Nếu chưa đăng nhập, hiển thị UI đăng nhập/đăng ký
+          if (!userProvider.isLoggedIn) {
+            return _buildAuthenticationUI(context);
+          }
+
+          // Nếu đã đăng nhập, hiển thị profile
           final user = userProvider.currentUser;
+          final displayName =
+              user?.fullName ?? user?.email.split('@')[0] ?? 'Người dùng';
+          final email = user?.email ?? '';
 
           return SingleChildScrollView(
             child: Column(
@@ -30,8 +45,8 @@ class ProfileScreen extends StatelessWidget {
                         radius: 50,
                         backgroundColor: const Color(0xFFd63384),
                         child: Text(
-                          user?.fullName?.isNotEmpty == true
-                              ? user!.fullName[0].toUpperCase()
+                          displayName.isNotEmpty
+                              ? displayName[0].toUpperCase()
                               : 'U',
                           style: const TextStyle(
                             fontSize: 32,
@@ -42,7 +57,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        user?.fullName ?? 'Người dùng',
+                        displayName,
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -50,7 +65,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        user?.email ?? '',
+                        email,
                         style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                       ),
                     ],
@@ -63,7 +78,12 @@ class ProfileScreen extends StatelessWidget {
                   'Thông tin cá nhân',
                   'Cập nhật thông tin của bạn',
                   () {
-                    // TODO: Navigate to edit profile
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EditProfileScreen(),
+                      ),
+                    );
                   },
                 ),
                 _buildMenuItem(
@@ -72,7 +92,13 @@ class ProfileScreen extends StatelessWidget {
                   'Thông báo',
                   'Cài đặt thông báo',
                   () {
-                    // TODO: Navigate to notifications settings
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const NotificationSettingsScreen(),
+                      ),
+                    );
                   },
                 ),
                 Consumer<SettingsProvider>(
@@ -97,7 +123,12 @@ class ProfileScreen extends StatelessWidget {
                   'Ngôn ngữ',
                   'Thay đổi ngôn ngữ ứng dụng',
                   () {
-                    // TODO: Navigate to language settings
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LanguageSettingsScreen(),
+                      ),
+                    );
                   },
                 ),
                 _buildMenuItem(
@@ -106,7 +137,12 @@ class ProfileScreen extends StatelessWidget {
                   'Hỗ trợ',
                   'Trung tâm trợ giúp',
                   () {
-                    // TODO: Navigate to help center
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HelpCenterScreen(),
+                      ),
+                    );
                   },
                 ),
                 _buildMenuItem(
@@ -115,7 +151,7 @@ class ProfileScreen extends StatelessWidget {
                   'Về ứng dụng',
                   'Thông tin phiên bản',
                   () {
-                    // TODO: Show about dialog
+                    _showAboutDialog(context);
                   },
                 ),
                 const SizedBox(height: 24),
@@ -149,6 +185,105 @@ class ProfileScreen extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  // UI khi chưa đăng nhập
+  Widget _buildAuthenticationUI(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Logo/Icon
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFd63384).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.person_outline,
+                size: 80,
+                color: Color(0xFFd63384),
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Tiêu đề
+            const Text(
+              'Chào mừng đến với WordMaster!',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+
+            // Mô tả
+            Text(
+              'Đăng nhập hoặc tạo tài khoản để theo dõi tiến trình học tập của bạn',
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 48),
+
+            // Nút đăng nhập
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFd63384),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Đăng nhập',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Nút đăng ký
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RegisterScreen(),
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFd63384),
+                  side: const BorderSide(color: Color(0xFFd63384)),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Tạo tài khoản mới',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -203,7 +338,10 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showLogoutDialog(BuildContext context, UserProvider userProvider) {
+  void _showLogoutDialog(
+    BuildContext context,
+    SimpleFirebaseUserProvider userProvider,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -221,18 +359,76 @@ class ProfileScreen extends StatelessWidget {
               onPressed: () async {
                 Navigator.of(context).pop();
                 await userProvider.logout();
-                if (context.mounted) {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    '/login',
-                    (route) => false,
-                  );
-                }
+                // Không cần navigate vì app sẽ tự động cập nhật UI
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               child: const Text(
                 'Đăng xuất',
                 style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFd63384).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.school, color: Color(0xFFd63384)),
+              ),
+              const SizedBox(width: 12),
+              const Text('Về WordMaster'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'WordMaster',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text('Phiên bản: 1.0.0'),
+              const SizedBox(height: 16),
+              const Text(
+                'Ứng dụng học từ vựng thông minh với flashcards và quiz tương tác.',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Được phát triển bởi:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              const Text('Nhóm phát triển WordMaster'),
+              const SizedBox(height: 16),
+              const Text(
+                '© 2024 WordMaster. Mọi quyền được bảo lưu.',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Đóng',
+                style: TextStyle(color: Color(0xFFd63384)),
               ),
             ),
           ],

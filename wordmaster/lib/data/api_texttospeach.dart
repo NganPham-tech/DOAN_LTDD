@@ -14,7 +14,7 @@ class TextToSpeechApi {
       await _flutterTts.setSpeechRate(0.5); // Tốc độ nói (0.0 - 1.0)
       await _flutterTts.setVolume(1.0); // Âm lượng (0.0 - 1.0)
       await _flutterTts.setPitch(1.0); // Cao độ giọng nói (0.0 - 2.0)
-      
+
       _isInitialized = true;
       print("TTS initialized successfully");
     } catch (e) {
@@ -27,11 +27,11 @@ class TextToSpeechApi {
     if (!_isInitialized) {
       await init();
     }
-    
+
     try {
       // Dừng phát âm hiện tại nếu có
       await _flutterTts.stop();
-      
+
       // Phát âm text mới
       await _flutterTts.speak(text);
       print("Speaking: $text");

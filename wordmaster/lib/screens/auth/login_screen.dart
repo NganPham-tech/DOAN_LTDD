@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (success && mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pop(context);
       } else if (mounted) {
         _showErrorMessage(
           userProvider.error ?? 'Email hoặc mật khẩu không chính xác',

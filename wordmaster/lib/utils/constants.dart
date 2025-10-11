@@ -17,7 +17,7 @@ class AppConstants {
       dotenv.env['DEFAULT_DIFFICULTY'] ?? 'Medium';
 
   // Database Configuration
-  static String get databaseName => dotenv.env['DB_NAME'] ?? 'wordmasterapp';
+  static String get databaseName => dotenv.env['DB_NAME'] ?? 'wordmaster.db';
   static int get databaseVersion => 1;
 
   // API Configuration

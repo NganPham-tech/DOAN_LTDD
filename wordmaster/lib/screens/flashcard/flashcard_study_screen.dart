@@ -201,14 +201,19 @@ class _FlashcardStudyScreenState extends State<FlashcardStudyScreen> with Single
                 animation: _flipController,
                 builder: (context, child) {
                   final angle = _flipController.value * 3.14159;
+                  
+                  // Hiển thị mặt trước khi góc nhỏ hơn 90 độ (pi/2)
+                  final showFront = angle < 1.5708;
+                  
+                  // Tạo transform với góc xoay phù hợp
                   final transform = Matrix4.identity()
                     ..setEntry(3, 2, 0.001)
-                    ..rotateY(angle);
+                    ..rotateY(showFront ? angle : angle - 3.14159);
                   
                   return Transform(
                     transform: transform,
                     alignment: Alignment.center,
-                    child: _isFront
+                    child: showFront
                         ? _buildFrontCard(currentCard)
                         : _buildBackCard(currentCard),
                   );

@@ -5,12 +5,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'providers/simple_firebase_user_provider.dart';
 import 'providers/settings_provider.dart';
+import 'providers/quiz_provider.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/flashcard/flashcard_overview_screen.dart';
 import 'screens/progress/progress_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
+import 'screens/quiz/quiz_topics_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +42,7 @@ class MyApp extends StatelessWidget {
           lazy: false,
         ),
         ChangeNotifierProvider(create: (_) => SettingsProvider(), lazy: true),
+        ChangeNotifierProvider(create: (_) => QuizProvider(), lazy: true),
       ],
       child: MaterialApp(
         title: 'WordMaster',
@@ -80,7 +83,7 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const FlashcardOverviewScreen(),
-    const QuizPlaceholderScreen(),
+    const QuizTopicsScreen(),
     const ProgressScreen(),
     const ProfileScreen(),
   ];
@@ -137,27 +140,6 @@ class FlashcardPlaceholderScreen extends StatelessWidget {
   }
 }
 
-class QuizPlaceholderScreen extends StatelessWidget {
-  const QuizPlaceholderScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Quiz'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-      ),
-      body: const Center(
-        child: Text(
-          'Quiz Screen\n(Đang phát triển)',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 18),
-        ),
-      ),
-    );
-  }
-}
 
 class ProgressPlaceholderScreen extends StatelessWidget {
   const ProgressPlaceholderScreen({super.key});

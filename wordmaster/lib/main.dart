@@ -7,6 +7,7 @@ import 'providers/simple_firebase_user_provider.dart';
 import 'providers/settings_provider.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/flashcard/flashcard_overview_screen.dart';
+import 'screens/progress/progress_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
@@ -80,7 +81,7 @@ class _MainNavigationState extends State<MainNavigation> {
     const HomeScreen(),
     const FlashcardOverviewScreen(),
     const QuizPlaceholderScreen(),
-    const ProgressPlaceholderScreen(),
+    const ProgressScreen(),
     const ProfileScreen(),
   ];
 

@@ -19,11 +19,13 @@ class QuizProvider with ChangeNotifier {
   int get currentQuestionIndex => _currentQuestionIndex;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  bool get isQuizActive => _currentTopic != null && _currentQuestions.isNotEmpty;
-  QuizQuestion? get currentQuestion => 
-      _currentQuestions.isNotEmpty && _currentQuestionIndex < _currentQuestions.length
-          ? _currentQuestions[_currentQuestionIndex]
-          : null;
+  bool get isQuizActive =>
+      _currentTopic != null && _currentQuestions.isNotEmpty;
+  QuizQuestion? get currentQuestion =>
+      _currentQuestions.isNotEmpty &&
+          _currentQuestionIndex < _currentQuestions.length
+      ? _currentQuestions[_currentQuestionIndex]
+      : null;
 
   // Load quiz topics (sample data)
   Future<void> loadQuizTopics() async {
@@ -34,7 +36,8 @@ class QuizProvider with ChangeNotifier {
         QuizTopic(
           id: 1,
           name: 'English Grammar',
-          description: 'Test your knowledge of English grammar rules and structures',
+          description:
+              'Test your knowledge of English grammar rules and structures',
           imagePath: 'images/grammar.png',
           questionCount: 15,
           difficulty: 'Medium',
@@ -98,7 +101,7 @@ class QuizProvider with ChangeNotifier {
       _currentQuestionIndex = 0;
       _userAnswers = [];
       _quizStartTime = DateTime.now();
-      
+
       // Generate sample questions for the topic
       _currentQuestions = _generateQuestionsForTopic(topic);
       _clearError();
@@ -147,7 +150,7 @@ class QuizProvider with ChangeNotifier {
 
     int correctAnswers = 0;
     for (int i = 0; i < _currentQuestions.length; i++) {
-      if (i < _userAnswers.length && 
+      if (i < _userAnswers.length &&
           _userAnswers[i] == _currentQuestions[i].correctAnswerIndex) {
         correctAnswers++;
       }
@@ -157,7 +160,7 @@ class QuizProvider with ChangeNotifier {
     int wrongAnswers = totalQuestions - correctAnswers;
     double percentage = (correctAnswers / totalQuestions) * 100;
     int score = (percentage * 10).round(); // Score out of 1000
-    
+
     return QuizResult(
       topicId: _currentTopic!.id,
       score: score,
@@ -190,12 +193,13 @@ class QuizProvider with ChangeNotifier {
             question: "Which sentence is grammatically correct?",
             options: [
               "He don't like coffee",
-              "He doesn't like coffee", 
+              "He doesn't like coffee",
               "He not like coffee",
-              "He no likes coffee"
+              "He no likes coffee",
             ],
             correctAnswerIndex: 1,
-            explanation: "The correct form is 'doesn't' (does not) for third person singular.",
+            explanation:
+                "The correct form is 'doesn't' (does not) for third person singular.",
             difficulty: "Easy",
           ),
           QuizQuestion(
@@ -215,12 +219,13 @@ class QuizProvider with ChangeNotifier {
             question: "What does 'elaborate' mean?",
             options: [
               "Simple and basic",
-              "Complex and detailed", 
+              "Complex and detailed",
               "Fast and quick",
-              "Old and outdated"
+              "Old and outdated",
             ],
             correctAnswerIndex: 1,
-            explanation: "'Elaborate' means detailed, complex, or carefully planned.",
+            explanation:
+                "'Elaborate' means detailed, complex, or carefully planned.",
             difficulty: "Medium",
           ),
           // Add more vocabulary questions...

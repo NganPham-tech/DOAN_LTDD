@@ -140,7 +140,6 @@ class FlashcardPlaceholderScreen extends StatelessWidget {
   }
 }
 
-
 class ProgressPlaceholderScreen extends StatelessWidget {
   const ProgressPlaceholderScreen({super.key});
 

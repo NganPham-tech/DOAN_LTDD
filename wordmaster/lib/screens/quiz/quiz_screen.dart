@@ -65,11 +65,7 @@ class _QuizScreenState extends State<QuizScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red,
-                  ),
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
                   Text(
                     'Error loading quiz',
@@ -89,13 +85,12 @@ class _QuizScreenState extends State<QuizScreen> {
 
           final currentQuestion = quizProvider.currentQuestion;
           if (currentQuestion == null) {
-            return const Center(
-              child: Text('No questions available'),
-            );
+            return const Center(child: Text('No questions available'));
           }
 
-          final progress = (quizProvider.currentQuestionIndex + 1) / 
-                          quizProvider.currentQuestions.length;
+          final progress =
+              (quizProvider.currentQuestionIndex + 1) /
+              quizProvider.currentQuestions.length;
 
           return Column(
             children: [
@@ -160,7 +155,9 @@ class _QuizScreenState extends State<QuizScreen> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: _getDifficultyColor(currentQuestion.difficulty),
+                                      color: _getDifficultyColor(
+                                        currentQuestion.difficulty,
+                                      ),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
@@ -196,15 +193,18 @@ class _QuizScreenState extends State<QuizScreen> {
                           itemCount: currentQuestion.options.length,
                           itemBuilder: (context, index) {
                             final isSelected = _selectedAnswer == index;
-                            final isCorrect = index == currentQuestion.correctAnswerIndex;
-                            
+                            final isCorrect =
+                                index == currentQuestion.correctAnswerIndex;
+
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
                               child: AnswerOption(
                                 text: currentQuestion.options[index],
                                 isSelected: isSelected,
                                 isCorrect: _showExplanation ? isCorrect : null,
-                                onTap: _showExplanation ? null : () => _selectAnswer(index),
+                                onTap: _showExplanation
+                                    ? null
+                                    : () => _selectAnswer(index),
                               ),
                             );
                           },
@@ -277,10 +277,12 @@ class _QuizScreenState extends State<QuizScreen> {
                     if (quizProvider.currentQuestionIndex > 0)
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: _showExplanation ? null : () {
-                            quizProvider.previousQuestion();
-                            _resetAnswerState();
-                          },
+                          onPressed: _showExplanation
+                              ? null
+                              : () {
+                                  quizProvider.previousQuestion();
+                                  _resetAnswerState();
+                                },
                           child: const Text('Previous'),
                         ),
                       ),
@@ -318,7 +320,7 @@ class _QuizScreenState extends State<QuizScreen> {
     } else {
       final quizProvider = Provider.of<QuizProvider>(context, listen: false);
       final hasNext = quizProvider.nextQuestion();
-      
+
       if (hasNext) {
         _resetAnswerState();
       } else {
@@ -337,11 +339,9 @@ class _QuizScreenState extends State<QuizScreen> {
   void _finishQuiz() {
     final quizProvider = Provider.of<QuizProvider>(context, listen: false);
     final result = quizProvider.getQuizResult();
-    
+
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => QuizResultScreen(result: result),
-      ),
+      MaterialPageRoute(builder: (context) => QuizResultScreen(result: result)),
     );
   }
 
@@ -349,9 +349,10 @@ class _QuizScreenState extends State<QuizScreen> {
     if (!_showExplanation) {
       return 'Submit Answer';
     }
-    
-    final isLast = quizProvider.currentQuestionIndex == 
-                   quizProvider.currentQuestions.length - 1;
+
+    final isLast =
+        quizProvider.currentQuestionIndex ==
+        quizProvider.currentQuestions.length - 1;
     return isLast ? 'Finish Quiz' : 'Next Question';
   }
 
@@ -373,7 +374,9 @@ class _QuizScreenState extends State<QuizScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Quit Quiz?'),
-        content: const Text('Are you sure you want to quit? Your progress will be lost.'),
+        content: const Text(
+          'Are you sure you want to quit? Your progress will be lost.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),

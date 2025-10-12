@@ -26,10 +26,7 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
       appBar: AppBar(
         title: const Text(
           'Quiz Topics',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Theme.of(context).primaryColor,
         elevation: 0,
@@ -38,9 +35,7 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
       body: Consumer<QuizProvider>(
         builder: (context, quizProvider, child) {
           if (quizProvider.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (quizProvider.error != null) {
@@ -48,11 +43,7 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.grey[400],
-                  ),
+                  Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
                   const SizedBox(height: 16),
                   Text(
                     'Oops! Something went wrong',
@@ -65,10 +56,7 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
                   const SizedBox(height: 8),
                   Text(
                     quizProvider.error!,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[500],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
@@ -86,11 +74,7 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.quiz_outlined,
-                    size: 64,
-                    color: Colors.grey[400],
-                  ),
+                  Icon(Icons.quiz_outlined, size: 64, color: Colors.grey[400]),
                   const SizedBox(height: 16),
                   Text(
                     'No quiz topics available',
@@ -103,10 +87,7 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
                   const SizedBox(height: 8),
                   Text(
                     'Check back later for new quizzes!',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[500],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                   ),
                 ],
               ),
@@ -148,11 +129,9 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
   }
 
   void _startQuiz(BuildContext context, QuizTopic topic) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => QuizScreen(topic: topic),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => QuizScreen(topic: topic)));
   }
 }
 
@@ -160,22 +139,16 @@ class QuizTopicCard extends StatelessWidget {
   final QuizTopic topic;
   final VoidCallback onTap;
 
-  const QuizTopicCard({
-    super.key,
-    required this.topic,
-    required this.onTap,
-  });
+  const QuizTopicCard({super.key, required this.topic, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final quizProvider = Provider.of<QuizProvider>(context);
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -224,14 +197,18 @@ class QuizTopicCard extends StatelessWidget {
                             Icon(
                               quizProvider.getDifficultyIcon(topic.difficulty),
                               size: 16,
-                              color: quizProvider.getDifficultyColor(topic.difficulty),
+                              color: quizProvider.getDifficultyColor(
+                                topic.difficulty,
+                              ),
                             ),
                             const SizedBox(width: 4),
                             Text(
                               topic.difficulty,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: quizProvider.getDifficultyColor(topic.difficulty),
+                                color: quizProvider.getDifficultyColor(
+                                  topic.difficulty,
+                                ),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),

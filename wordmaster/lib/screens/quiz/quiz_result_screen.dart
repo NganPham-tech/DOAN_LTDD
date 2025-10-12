@@ -12,10 +12,7 @@ class QuizResultScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Quiz Results',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Theme.of(context).primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -50,11 +47,7 @@ class QuizResultScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Icon(
-                    _getScoreIcon(),
-                    size: 64,
-                    color: Colors.white,
-                  ),
+                  Icon(_getScoreIcon(), size: 64, color: Colors.white),
                   const SizedBox(height: 16),
                   Text(
                     _getScoreMessage(),
@@ -391,10 +384,7 @@ class _PerformanceIndicator extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             Text(
               '${percentage.toStringAsFixed(1)}%',

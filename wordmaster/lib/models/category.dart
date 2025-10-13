@@ -4,6 +4,12 @@ class Category {
   final String? description;
   final String colorCode;
   final String? icon;
+  
+  // Getter để tương thích với code hiện tại
+  int get id => categoryID ?? 0;
+  
+  // Getter cho số lượng deck (mock data for now)
+  int get deckCount => 5;
 
   Category({
     this.categoryID,
@@ -31,6 +37,28 @@ class Category {
       colorCode: map['ColorCode'] ?? '#6c757d',
       icon: map['Icon'],
     );
+  }
+
+  // Factory constructor từ JSON (cho API calls)
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      categoryID: json['CategoryID'] ?? json['id'] ?? json['category_id'],
+      name: json['Name'] ?? json['name'] ?? 'Unknown',
+      description: json['Description'] ?? json['description'],
+      colorCode: json['ColorCode'] ?? json['color_code'] ?? '#6c757d',
+      icon: json['Icon'] ?? json['icon'],
+    );
+  }
+
+  // Chuyển đổi thành JSON (cho API calls)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': categoryID,
+      'name': name,
+      'description': description,
+      'color_code': colorCode,
+      'icon': icon,
+    };
   }
 
   Category copyWith({

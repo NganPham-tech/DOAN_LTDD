@@ -1,7 +1,7 @@
 // lib/screens/dictation/dictation_play_screen.dart
 import 'package:flutter/material.dart';
 import '../../models/dictation.dart';
-import '../../services/tts_services.dart';
+import '../../services/tts_service.dart';
 import '../../services/dictation_scoring_service.dart';
 import 'dictation_result_screen.dart';
 

@@ -1,7 +1,9 @@
 // lib/flashcard/flashcard_study_screen.dart
 import 'package:flutter/material.dart';
-import '/../data/flashcard_api.dart';
-import '/../services/tts_services.dart';
+import '../../data/flashcard_api.dart';
+import '../../models/deck.dart';
+import '../../models/flashcard.dart';
+import '../../services/tts_service.dart';
 
 class FlashcardStudyScreen extends StatefulWidget {
   final Deck deck;
@@ -39,6 +41,13 @@ class _FlashcardStudyScreenState extends State<FlashcardStudyScreen> with Single
         _isLoading = false;
         _updateProgress();
       });
+      
+      // Tự động phát âm thẻ đầu tiên nếu là vocabulary
+      if (_flashcards.isNotEmpty && _flashcards[0].type == 'vocabulary') {
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          _speakText();
+        });
+      }
     } catch (e) {
       print('Error loading flashcards: $e');
       setState(() => _isLoading = false);
@@ -59,6 +68,13 @@ class _FlashcardStudyScreenState extends State<FlashcardStudyScreen> with Single
         _flipController.reset();
         _updateProgress();
       });
+      
+      // Tự động phát âm từ mới nếu là vocabulary
+      if (isVocabulary) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _speakText();
+        });
+      }
     } else {
       _showCompletionDialog();
     }
@@ -72,6 +88,13 @@ class _FlashcardStudyScreenState extends State<FlashcardStudyScreen> with Single
         _flipController.reset();
         _updateProgress();
       });
+      
+      // Tự động phát âm từ nếu là vocabulary
+      if (isVocabulary) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _speakText();
+        });
+      }
     }
   }
 
@@ -85,24 +108,25 @@ class _FlashcardStudyScreenState extends State<FlashcardStudyScreen> with Single
   }
 
   void _markAsRemembered() {
-    final card = _flashcards[_currentIndex];
-    FlashcardAPI.updateLearningProgress(LearningUpdate(
-      userId: 1,
-      flashcardId: card.id,
-      status: 'Mastered',
-      remembered: true,
-    ));
+    // TODO: Implement API call to update learning progress
+    // final card = _flashcards[_currentIndex];
+    // FlashcardAPI.updateLearningProgress(LearningUpdate(
+    //   userId: 1,
+    //   flashcardId: card.id,
+    //   status: 'Mastered',
+    //   remembered: true,
+    // ));
     _nextCard();
   }
 
   void _markForReview() {
-    final card = _flashcards[_currentIndex];
-    FlashcardAPI.updateLearningProgress(LearningUpdate(
-      userId: 1,
-      flashcardId: card.id,
-      status: 'Learning',
-      remembered: false,
-    ));
+    // final card = _flashcards[_currentIndex];
+    // FlashcardAPI.updateLearningProgress(LearningUpdate(
+    //   userId: 1,
+    //   flashcardId: card.id,
+    //   status: 'Learning',
+    //   remembered: false,
+    // ));
     _nextCard();
   }
 

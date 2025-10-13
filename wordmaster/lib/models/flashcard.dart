@@ -22,6 +22,10 @@ class Flashcard {
   final CardStatus status;
   final DateTime? nextReviewDate;
 
+  // Getters để tương thích với code hiện tại
+  int get id => flashcardID ?? 0;
+  String get type => cardType.toString().split('.').last;
+
   Flashcard({
     this.flashcardID,
     required this.deckID,
@@ -126,5 +130,63 @@ class Flashcard {
       status: status ?? this.status,
       nextReviewDate: nextReviewDate ?? this.nextReviewDate,
     );
+  }
+
+  // Factory constructor từ JSON (cho API calls)
+  factory Flashcard.fromJson(Map<String, dynamic> json) {
+    return Flashcard(
+      flashcardID: json['id'] ?? json['flashcard_id'],
+      deckID: json['deck_id'],
+      cardType: CardType.values.firstWhere(
+        (e) => e.toString().split('.').last.toLowerCase() ==
+               (json['card_type']?.toString().toLowerCase() ?? 'vocabulary'),
+        orElse: () => CardType.vocabulary,
+      ),
+      question: json['front'] ?? json['question'],
+      answer: json['back'] ?? json['answer'],
+      example: json['example'],
+      phonetic: json['pronunciation'] ?? json['phonetic'],
+      imagePath: json['image_path'],
+      difficulty: Difficulty.values.firstWhere(
+        (e) => e.toString().split('.').last.toLowerCase() ==
+               (json['difficulty']?.toString().toLowerCase() ?? 'medium'),
+        orElse: () => Difficulty.medium,
+      ),
+      wordType: json['word_type'],
+      createdAt: json['created_at'] != null 
+        ? DateTime.parse(json['created_at']) 
+        : DateTime.now(),
+      updatedAt: json['updated_at'] != null 
+        ? DateTime.parse(json['updated_at']) 
+        : DateTime.now(),
+      status: CardStatus.values.firstWhere(
+        (e) => e.toString().split('.').last.toLowerCase() ==
+               (json['status']?.toString().toLowerCase() ?? 'newcard'),
+        orElse: () => CardStatus.newCard,
+      ),
+      nextReviewDate: json['next_review_date'] != null
+        ? DateTime.parse(json['next_review_date'])
+        : null,
+    );
+  }
+
+  // Chuyển đổi thành JSON (cho API calls)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': flashcardID,
+      'deck_id': deckID,
+      'card_type': cardType.toString().split('.').last,
+      'front': question,
+      'back': answer,
+      'example': example,
+      'pronunciation': phonetic,
+      'image_path': imagePath,
+      'difficulty': difficulty.toString().split('.').last,
+      'word_type': wordType,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+      'status': status.toString().split('.').last,
+      'next_review_date': nextReviewDate?.toIso8601String(),
+    };
   }
 }

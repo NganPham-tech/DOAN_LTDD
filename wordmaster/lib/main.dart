@@ -9,7 +9,7 @@ import 'providers/quiz_provider.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/flashcard/flashcard_overview_screen.dart';
 import 'screens/progress/progress_screen.dart';
-import 'screens/profile_screen.dart';
+import 'screens/profile/profile_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/quiz/quiz_topics_screen.dart';

@@ -1,9 +1,7 @@
-// lib/screens/dictation/dictation_list_screen.dart
 import 'package:flutter/material.dart';
 import '../../models/dictation.dart';
-import '../../data/dictation_data.dart';
 import 'dictation_play_screen.dart';
-
+import '../../services/dictation_service.dart';
 class DictationListScreen extends StatefulWidget {
   const DictationListScreen({super.key});
 
@@ -22,11 +20,24 @@ class _DictationListScreenState extends State<DictationListScreen> with SingleTi
     _loadLessons();
   }
   
-  void _loadLessons() {
+  void _loadLessons() async {
+  try {
     setState(() {
-      _allLessons = DictationData.getSampleLessons();
+      // Show loading indicator if needed
     });
+    
+    final lessons = await DictationService.getAllLessons();
+    
+    setState(() {
+      _allLessons = lessons;
+    });
+  } catch (e) {
+    // Handle error
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error loading lessons: $e')),
+    );
   }
+}
   
   List<DictationLesson> _getLessonsByTab(int tabIndex) {
     if (tabIndex == 0) return _allLessons; // Tất cả

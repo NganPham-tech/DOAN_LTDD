@@ -88,7 +88,11 @@ class TtsService {
   // Thiết lập tốc độ phát âm (0.0 - 1.0)
   static Future<void> setSpeechRate(double rate) async {
     if (_flutterTts != null) {
+      print('TTS: Setting speech rate to $rate');
       await _flutterTts!.setSpeechRate(rate);
+      print('TTS: Speech rate set successfully');
+    } else {
+      print('TTS: Cannot set speech rate - TTS not initialized');
     }
   }
 

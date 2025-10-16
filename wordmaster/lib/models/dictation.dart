@@ -5,22 +5,26 @@ class DictationLesson {
   final String title;
   final String description;
   final DictationLevel level;
-  final String videoPath;        // assets/videos/lesson_01.mp4
-  final String thumbnailPath;    // assets/images/lesson_01_thumb.jpg
+  final String thumbnailPath;    
   final int durationSeconds;
-  final String fullTranscript;   // Full text để chấm điểm
-  final List<DictationSegment> segments;  // Chia theo câu
+  final String fullTranscript;   // Text để TTS đọc
+  final List<DictationSegment> segments;
+  final bool useTTS;            // Flag để biết dùng TTS hay audio file
+  final double speechRate;      // Tốc độ đọc TTS (0.3 - 1.0)
+  final String voiceLanguage;   // Ngôn ngữ TTS (en-US, vi-VN, etc.)
   
   DictationLesson({
     required this.id,
     required this.title,
     required this.description,
     required this.level,
-    required this.videoPath,
     required this.thumbnailPath,
     required this.durationSeconds,
     required this.fullTranscript,
     required this.segments,
+    this.useTTS = true,  // Mặc định dùng TTS
+    this.speechRate = 0.5, // Tốc độ mặc định
+    this.voiceLanguage = 'en-US', // Ngôn ngữ mặc định
   });
   
   int get totalWords => fullTranscript.split(' ').length;

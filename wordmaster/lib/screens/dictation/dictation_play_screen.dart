@@ -33,8 +33,7 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
   }
   
   Future<void> _initializeTTS() async {
-    await TtsService.initialize();
-    // Cấu hình TTS cho dictation
+    // TTS đã được khởi tạo trong main.dart, chỉ cần cấu hình
     await TtsService.setLanguage('en-US');
     await TtsService.setSpeechRate(_speechRate);
   }

@@ -30,7 +30,7 @@ class _FlashcardStudyScreenState extends State<FlashcardStudyScreen> with Single
       duration: const Duration(milliseconds: 300),
     );
     _loadFlashcards();
-    TtsService.initialize();
+    // TTS đã được khởi tạo trong main.dart
   }
 
   Future<void> _loadFlashcards() async {
@@ -132,6 +132,8 @@ class _FlashcardStudyScreenState extends State<FlashcardStudyScreen> with Single
 
   void _speakText() {
     if (_flashcards[_currentIndex].type == 'vocabulary') {
+      print('DEBUG: Attempting to speak: ${_flashcards[_currentIndex].question}');
+      print('DEBUG: TTS initialized: ${TtsService.isInitialized}');
       TtsService.speak(_flashcards[_currentIndex].question);
     }
   }

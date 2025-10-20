@@ -1,6 +1,7 @@
 // lib/flashcard/flashcard_overview_screen.dart
 import 'package:flutter/material.dart';
-import '/../data/flashcard_api.dart';
+import '../../data/flashcard_api.dart';
+import '../../models/category.dart';
 import 'flashcard_deck_list_screen.dart';
 
 class FlashcardOverviewScreen extends StatefulWidget {
@@ -144,7 +145,7 @@ class _FlashcardOverviewScreenState extends State<FlashcardOverviewScreen> with 
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      category.icon,
+                      Icons.book,  // Default icon
                       size: 32,
                       color: _parseColor(category.colorCode),
                     ),
@@ -160,7 +161,7 @@ class _FlashcardOverviewScreenState extends State<FlashcardOverviewScreen> with 
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      category.description,
+                      category.description ?? 'Không có mô tả',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],

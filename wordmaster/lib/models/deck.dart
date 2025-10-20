@@ -33,6 +33,9 @@ class Deck {
   final bool isUserCreated;
   final String authorName;
 
+  // Getters để tương thích với code hiện tại
+  int get id => deckID ?? 0;
+
   Deck({
     this.deckID,
     required this.userID,
@@ -139,6 +142,59 @@ class Deck {
 
   // Helper getters
   double get progress => cardCount > 0 ? learnedCount / cardCount : 0.0;
-
   String get progressText => '$learnedCount/$cardCount từ';
+  
+  // Getters để tương thích với code hiện tại
+  int get learnedCards => learnedCount;
+  int get totalCards => cardCount;
+
+  // Factory constructor từ JSON (cho API calls)
+  factory Deck.fromJson(Map<String, dynamic> json) {
+    return Deck(
+      deckID: json['id'] ?? json['deck_id'],
+      userID: json['user_id'] ?? 1,
+      categoryID: json['category_id'],
+      name: json['name'],
+      description: json['description'],
+      thumbnail: json['thumbnail'],
+      isPublic: json['is_public'] ?? false,
+      viewCount: json['view_count'] ?? 0,
+      rating: (json['rating'] ?? 0.0).toDouble(),
+      totalRatings: json['total_ratings'] ?? 0,
+      createdAt: json['created_at'] != null 
+        ? DateTime.parse(json['created_at']) 
+        : DateTime.now(),
+      updatedAt: json['updated_at'] != null 
+        ? DateTime.parse(json['updated_at']) 
+        : DateTime.now(),
+      cardCount: json['card_count'] ?? json['total_cards'] ?? 0,
+      learnedCount: json['learned_count'] ?? json['learned_cards'] ?? 0,
+      isFavorite: json['is_favorite'] ?? false,
+      isUserCreated: json['is_user_created'] ?? false,
+      authorName: json['author_name'] ?? '',
+    );
+  }
+
+  // Chuyển đổi thành JSON (cho API calls)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': deckID,
+      'user_id': userID,
+      'category_id': categoryID,
+      'name': name,
+      'description': description,
+      'thumbnail': thumbnail,
+      'is_public': isPublic,
+      'view_count': viewCount,
+      'rating': rating,
+      'total_ratings': totalRatings,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+      'card_count': cardCount,
+      'learned_count': learnedCount,
+      'is_favorite': isFavorite,
+      'is_user_created': isUserCreated,
+      'author_name': authorName,
+    };
+  }
 }

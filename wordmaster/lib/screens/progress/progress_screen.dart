@@ -1,4 +1,3 @@
-// lib/progress/progress_screen.dart
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '/../data/progress_api.dart';
@@ -11,11 +10,12 @@ class ProgressScreen extends StatefulWidget {
 }
 
 class _ProgressScreenState extends State<ProgressScreen> {
-  late UserProgress _userProgress;
-  late List<DailyProgress> _weeklyProgress;
-  late List<Activity> _recentActivities;
-  late List<Achievement> _achievements;
+  UserProgress? _userProgress;
+  List<DailyProgress> _weeklyProgress = [];
+  List<Activity> _recentActivities = [];
+  List<Achievement> _achievements = [];
   bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -24,22 +24,32 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
+    
     try {
       final progress = await ProgressAPI.getUserProgress();
       final weekly = await ProgressAPI.getWeeklyProgress();
       final activities = await ProgressAPI.getRecentActivities();
       final achievements = await ProgressAPI.getAchievements();
       
-      setState(() {
-        _userProgress = progress;
-        _weeklyProgress = weekly;
-        _recentActivities = activities;
-        _achievements = achievements;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _userProgress = progress;
+          _weeklyProgress = weekly;
+          _recentActivities = activities;
+          _achievements = achievements;
+          _isLoading = false;
+          _error = null;
+        });
+      }
     } catch (e) {
       print('Error loading progress data: $e');
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _error = 'Không thể tải dữ liệu tiến độ';
+        });
+      }
     }
   }
 
@@ -47,38 +57,67 @@ class _ProgressScreenState extends State<ProgressScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: _isLoading
+      body: SafeArea(
+        child: _isLoading
           ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+                      const SizedBox(height: 16),
+                      Text(
+                        _error!,
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadData,
+                        child: const Text('Thử lại'),
+                      ),
+                    ],
+                  ),
+                )
+          : _userProgress == null
+              ? const Center(child: Text('Không có dữ liệu'))
           : RefreshIndicator(
               onRefresh: _loadData,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                  bottom: 32, // Tăng padding bottom để tránh overflow
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Header
                     _buildHeader(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20), // Giảm từ 24
                     
                     // Summary Cards
                     _buildSummaryCards(),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24), // Giảm từ 32
                     
                     // Progress Chart
                     _buildProgressChart(),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24), // Giảm từ 32
                     
                     // Recent Activities
                     _buildRecentActivities(),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24), // Giảm từ 32
                     
                     // Achievements
                     _buildAchievements(),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20), // Tăng từ 16 để có không gian cuối
                   ],
                 ),
               ),
             ),
+      ),
     );
   }
 
@@ -107,7 +146,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               const Icon(Icons.star, size: 16, color: Colors.amber),
               const SizedBox(width: 4),
               Text(
-                'Cấp ${_userProgress.level}',
+                'Cấp ${_userProgress?.level ?? 0}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -135,29 +174,29 @@ class _ProgressScreenState extends State<ProgressScreen> {
         _buildSummaryCard(
           icon: Icons.flash_on,
           title: 'Từ đã học',
-          value: _userProgress.totalLearned.toString(),
-          subtitle: '${_userProgress.totalMastered} đã thuộc',
+          value: (_userProgress?.totalLearned ?? 0).toString(),
+          subtitle: '${_userProgress?.totalMastered ?? 0} đã thuộc',
           color: Colors.blue,
         ),
         _buildSummaryCard(
           icon: Icons.local_fire_department,
           title: 'Streak',
-          value: '${_userProgress.currentStreak} ngày',
-          subtitle: 'Cao nhất: ${_userProgress.bestStreak}',
-          color: Colors.red,
+          value: '${_userProgress?.currentStreak ?? 0} ngày',
+          subtitle: 'Cao nhất: ${_userProgress?.bestStreak ?? 0}',
+          color: Colors.orange,
         ),
         _buildSummaryCard(
           icon: Icons.psychology,
           title: 'Tỷ lệ nhớ',
-          value: '${_userProgress.memoryRate}%',
+          value: '${_userProgress?.memoryRate ?? 0}%',
           subtitle: 'Hiệu quả học tập',
           color: Colors.green,
         ),
         _buildSummaryCard(
           icon: Icons.quiz,
           title: 'Bài Quiz',
-          value: _userProgress.totalQuizzes.toString(),
-          subtitle: '${_userProgress.perfectQuizCount} bài perfect',
+          value: (_userProgress?.totalQuizzes ?? 0).toString(),
+          subtitle: '${_userProgress?.perfectQuizCount ?? 0} bài perfect',
           color: Colors.purple,
         ),
       ],
@@ -250,8 +289,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              height: 200,
+            Container(
+              height: 180, // Giảm từ 200 để tiết kiệm không gian
+              width: double.infinity,
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
@@ -352,6 +392,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: _recentActivities
+                  .take(5) // Chỉ hiển thị tối đa 5 activity để tránh overflow
                   .map((activity) => _buildActivityItem(activity))
                   .toList(),
             ),

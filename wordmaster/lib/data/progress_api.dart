@@ -1,131 +1,70 @@
+// lib/data/progress_api.dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+
 class ProgressAPI {
+  static const String baseUrl = 'http://10.0.2.2:8080'; // Thay URL của bạn
+
+  // Lấy tất cả dữ liệu cho trang Progress
+  static Future<Map<String, dynamic>> getAllProgressData(int userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/progress/user?userId=$userId'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] as Map<String, dynamic>;
+      } else {
+        throw Exception('Failed to fetch progress: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching progress data: $e');
+      rethrow;
+    }
+  }
+
+  // Wrapper methods để tương thích với code cũ
   static Future<UserProgress> getUserProgress() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    return UserProgress(
-      totalLearned: 156,
-      totalMastered: 89,
-      currentStreak: 7,
-      bestStreak: 12,
-      totalPoints: 1250,
-      level: 3,
-      perfectQuizCount: 5,
-      memoryRate: 72.5,
-      totalQuizzes: 15,
-    );
+    final userId = await _getUserId();
+    final data = await getAllProgressData(userId);
+    final userProgress = data['userProgress'] as Map<String, dynamic>;
+    return UserProgress.fromJson(userProgress);
   }
 
   static Future<List<DailyProgress>> getWeeklyProgress() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    
-    final now = DateTime.now();
-    return List.generate(7, (index) {
-      final date = now.subtract(Duration(days: 6 - index));
-      return DailyProgress(
-        date: date,
-        cardsLearned: [8, 12, 5, 15, 10, 7, 14][index],
-        quizzesCompleted: [1, 0, 1, 2, 0, 1, 1][index],
-        pointsEarned: [80, 120, 50, 150, 100, 70, 140][index],
-      );
-    });
+    final userId = await _getUserId();
+    final data = await getAllProgressData(userId);
+    final weeklyProgress = data['weeklyProgress'] as List;
+    return weeklyProgress.map((item) => DailyProgress.fromJson(item)).toList();
   }
 
   static Future<List<Activity>> getRecentActivities() async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    
-    return [
-      Activity(
-        type: ActivityType.quiz,
-        title: 'Hoàn thành bài Quiz: Phrasal Verbs',
-        description: 'Đạt 8/10 điểm',
-        icon: Icons.quiz,
-        color: Colors.blue,
-        timestamp: DateTime.now().subtract(const Duration(minutes: 30)),
-      ),
-      Activity(
-        type: ActivityType.learning,
-        title: 'Học 10 thẻ trong bộ Vocabulary: Animals',
-        description: 'Tỷ lệ nhớ: 80%',
-        icon: Icons.flash_on,
-        color: Colors.green,
-        timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-      ),
-      Activity(
-        type: ActivityType.review,
-        title: 'Ôn tập 12 flashcard hôm nay',
-        description: 'Thành thạo: 8 thẻ',
-        icon: Icons.repeat,
-        color: Colors.orange,
-        timestamp: DateTime.now().subtract(const Duration(hours: 5)),
-      ),
-      Activity(
-        type: ActivityType.achievement,
-        title: 'Đạt streak 7 ngày liên tiếp',
-        description: 'Phần thưởng: 50 điểm',
-        icon: Icons.local_fire_department,
-        color: Colors.red,
-        timestamp: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      Activity(
-        type: ActivityType.quiz,
-        title: 'Hoàn thành bài Quiz: Business English',
-        description: 'Đạt 9/10 điểm',
-        icon: Icons.quiz,
-        color: Colors.blue,
-        timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 3)),
-      ),
-    ];
+    final userId = await _getUserId();
+    final data = await getAllProgressData(userId);
+    final activities = data['recentActivities'] as List;
+    return activities.map((item) => Activity.fromJson(item)).toList();
   }
 
   static Future<List<Achievement>> getAchievements() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    
-    return [
-      Achievement(
-        id: 1,
-        name: 'Học 100 từ đầu tiên',
-        description: 'Hoàn thành 100 thẻ từ vựng đầu tiên',
-        icon: Icons.star,
-        color: Colors.amber,
-        isUnlocked: true,
-        unlockedAt: DateTime.now().subtract(const Duration(days: 5)),
-        points: 100,
-      ),
-      Achievement(
-        id: 2,
-        name: 'Duy trì streak 7 ngày',
-        description: 'Học liên tiếp trong 7 ngày',
-        icon: Icons.local_fire_department,
-        color: Colors.red,
-        isUnlocked: true,
-        unlockedAt: DateTime.now().subtract(const Duration(days: 2)),
-        points: 50,
-      ),
-      Achievement(
-        id: 3,
-        name: 'Master 50 từ vựng',
-        description: 'Thành thạo 50 thẻ từ vựng',
-        icon: Icons.verified,
-        color: Colors.green,
-        isUnlocked: false,
-        unlockedAt: null,
-        points: 75,
-      ),
-      Achievement(
-        id: 4,
-        name: 'Perfect Quiz x5',
-        description: 'Đạt điểm tuyệt đối 5 bài quiz',
-        icon: Icons.emoji_events,
-        color: Colors.purple,
-        isUnlocked: false,
-        unlockedAt: null,
-        points: 150,
-      ),
-    ];
+    final userId = await _getUserId();
+    final data = await getAllProgressData(userId);
+    final achievements = data['achievements'] as List;
+    return achievements.map((item) => Achievement.fromJson(item)).toList();
+  }
+
+  // Helper: Lấy userId (bạn cần implement theo cách của bạn)
+  static Future<int> _getUserId() async {
+    // TODO: Lấy từ SharedPreferences hoặc Provider/Riverpod
+    // Ví dụ:
+    // final prefs = await SharedPreferences.getInstance();
+    // return prefs.getInt('userId') ?? 0;
+    return 2; // UserID = 2 (user thường), UserID = 1 là admin
   }
 }
 
+// Models
 class UserProgress {
   final int totalLearned;
   final int totalMastered;
@@ -134,7 +73,7 @@ class UserProgress {
   final int totalPoints;
   final int level;
   final int perfectQuizCount;
-  final double memoryRate;
+  final int memoryRate;
   final int totalQuizzes;
 
   UserProgress({
@@ -148,55 +87,80 @@ class UserProgress {
     required this.memoryRate,
     required this.totalQuizzes,
   });
+
+  factory UserProgress.fromJson(Map<String, dynamic> json) {
+    return UserProgress(
+      totalLearned: json['totalLearned'] as int,
+      totalMastered: json['totalMastered'] as int,
+      currentStreak: json['currentStreak'] as int,
+      bestStreak: json['bestStreak'] as int,
+      totalPoints: json['totalPoints'] as int,
+      level: json['level'] as int,
+      perfectQuizCount: json['perfectQuizCount'] as int,
+      memoryRate: json['memoryRate'] as int,
+      totalQuizzes: json['totalQuizzes'] as int,
+    );
+  }
 }
 
 class DailyProgress {
   final DateTime date;
   final int cardsLearned;
   final int quizzesCompleted;
-  final int pointsEarned;
 
   DailyProgress({
     required this.date,
     required this.cardsLearned,
     required this.quizzesCompleted,
-    required this.pointsEarned,
   });
+
+  factory DailyProgress.fromJson(Map<String, dynamic> json) {
+    return DailyProgress(
+      date: DateTime.parse(json['date']),
+      cardsLearned: json['cardsLearned'] as int,
+      quizzesCompleted: json['quizzesCompleted'] as int,
+    );
+  }
 }
 
 class Activity {
-  final ActivityType type;
   final String title;
   final String description;
   final IconData icon;
   final Color color;
-  final DateTime timestamp;
+  final String timeAgo;
 
   Activity({
-    required this.type,
     required this.title,
     required this.description,
     required this.icon,
     required this.color,
-    required this.timestamp,
+    required this.timeAgo,
   });
 
-  String get timeAgo {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-    
-    if (difference.inMinutes < 1) return 'Vừa xong';
-    if (difference.inMinutes < 60) return '${difference.inMinutes} phút trước';
-    if (difference.inHours < 24) return '${difference.inHours} giờ trước';
-    return '${difference.inDays} ngày trước';
+  factory Activity.fromJson(Map<String, dynamic> json) {
+    return Activity(
+      title: json['title'] as String,
+      description: json['description'] as String,
+      icon: _getIconFromString(json['icon'] as String),
+      color: _getColorFromHex(json['color'] as String),
+      timeAgo: json['timeAgo'] as String,
+    );
   }
-}
 
-enum ActivityType {
-  learning,
-  review,
-  quiz,
-  achievement,
+  static IconData _getIconFromString(String iconName) {
+    switch (iconName) {
+      case 'school': return Icons.school;
+      case 'refresh': return Icons.refresh;
+      case 'quiz': return Icons.quiz;
+      case 'check_circle': return Icons.check_circle;
+      default: return Icons.circle;
+    }
+  }
+
+  static Color _getColorFromHex(String hex) {
+    return Color(int.parse(hex.substring(1), radix: 16) + 0xFF000000);
+  }
 }
 
 class Achievement {
@@ -205,9 +169,10 @@ class Achievement {
   final String description;
   final IconData icon;
   final Color color;
-  final bool isUnlocked;
-  final DateTime? unlockedAt;
   final int points;
+  final bool isUnlocked;
+  final int progress;
+  final int requirementValue;
 
   Achievement({
     required this.id,
@@ -215,8 +180,38 @@ class Achievement {
     required this.description,
     required this.icon,
     required this.color,
-    required this.isUnlocked,
-    required this.unlockedAt,
     required this.points,
+    required this.isUnlocked,
+    required this.progress,
+    required this.requirementValue,
   });
+
+  factory Achievement.fromJson(Map<String, dynamic> json) {
+    return Achievement(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      description: json['description'] as String,
+      icon: _getIconFromString(json['icon'] as String),
+      color: _getColorFromHex(json['color'] as String),
+      points: json['points'] as int,
+      isUnlocked: json['isUnlocked'] as bool,
+      progress: json['progress'] as int,
+      requirementValue: json['requirementValue'] as int,
+    );
+  }
+
+  static IconData _getIconFromString(String iconName) {
+    switch (iconName) {
+      case 'school': return Icons.school;
+      case 'local_fire_department': return Icons.local_fire_department;
+      case 'quiz': return Icons.quiz;
+      case 'grade': return Icons.grade;
+      case 'star': return Icons.star;
+      default: return Icons.circle;
+    }
+  }
+
+  static Color _getColorFromHex(String hex) {
+    return Color(int.parse(hex.substring(1), radix: 16) + 0xFF000000);
+  }
 }

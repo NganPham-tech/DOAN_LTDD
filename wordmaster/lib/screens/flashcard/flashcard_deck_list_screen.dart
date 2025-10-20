@@ -1,6 +1,8 @@
 // lib/flashcard/flashcard_deck_list_screen.dart
 import 'package:flutter/material.dart';
-import '/../data/flashcard_api.dart';
+import '../../data/flashcard_api.dart';
+import '../../models/category.dart';
+import '../../models/deck.dart';
 import 'flashcard_study_screen.dart';
 
 class FlashcardDeckListScreen extends StatefulWidget {
@@ -90,7 +92,7 @@ class _FlashcardDeckListScreenState extends State<FlashcardDeckListScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    deck.description,
+                    deck.description ?? 'Không có mô tả',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],

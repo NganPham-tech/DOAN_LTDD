@@ -1,7 +1,6 @@
-// lib/screens/dictation/dictation_play_screen.dart
 import 'package:flutter/material.dart';
 import '../../models/dictation.dart';
-import '../../services/tts_services.dart';
+import '../../services/tts_service.dart';
 import '../../services/dictation_scoring_service.dart';
 import 'dictation_result_screen.dart';
 
@@ -23,11 +22,20 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
   bool _isSegmentMode = false;
   DateTime? _startTime;
   
+  // TTS settings
+  double _speechRate = 0.5;  // Tốc độ đọc (0.0 - 1.0)
+  
   @override
   void initState() {
     super.initState();
-    TtsService.initialize();
+    _initializeTTS();
     _startTime = DateTime.now();
+  }
+  
+  Future<void> _initializeTTS() async {
+    // TTS đã được khởi tạo trong main.dart, chỉ cần cấu hình
+    await TtsService.setLanguage('en-US');
+    await TtsService.setSpeechRate(_speechRate);
   }
   
   Future<void> _playFullAudio() async {
@@ -38,6 +46,14 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
       _playCount++;
     });
     
+    // Force apply speech rate trước khi phát
+    await TtsService.setSpeechRate(_speechRate);
+    print('Playing at speed: $_speechRate'); // Debug log
+    
+    // Delay nhỏ để đảm bảo setting được apply
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    // Sử dụng TTS để đọc transcript
     await TtsService.speak(widget.lesson.fullTranscript);
     
     setState(() {
@@ -53,6 +69,13 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
       _currentSegmentIndex = index;
     });
     
+    // Force apply speech rate trước khi phát segment
+    await TtsService.setSpeechRate(_speechRate);
+    print('Playing segment at speed: $_speechRate'); // Debug log
+    
+    // Delay nhỏ để đảm bảo setting được apply
+    await Future.delayed(const Duration(milliseconds: 100));
+    
     final segment = widget.lesson.segments[index];
     await TtsService.speak(segment.text);
     
@@ -61,33 +84,94 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
     });
   }
   
-  void _toggleTranscript() {
-    setState(() {
-      _showTranscript = !_showTranscript;
-    });
+  // Widget để điều chỉnh tốc độ đọc
+  Widget _buildSpeedControl() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Tốc độ đọc',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.speed, size: 20, color: Color(0xFFd63384)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Slider(
+                    value: _speechRate,
+                    min: 0.3,
+                    max: 1.0,
+                    divisions: 7,
+                    label: _getSpeedLabel(_speechRate),
+                    activeColor: const Color(0xFFd63384),
+                    onChanged: (value) async {
+                      setState(() {
+                        _speechRate = value;
+                      });
+                      await TtsService.setSpeechRate(value);
+                    },
+                  ),
+                ),
+                Text(
+                  _getSpeedLabel(_speechRate),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  String _getSpeedLabel(double rate) {
+    if (rate <= 0.4) return 'Rất chậm';
+    if (rate <= 0.5) return 'Chậm';
+    if (rate <= 0.6) return 'Bình thường';
+    if (rate <= 0.8) return 'Nhanh';
+    return 'Rất nhanh';
   }
   
   void _submitAnswer() {
-    if (_textController.text.trim().isEmpty) {
+    final userInput = _textController.text.trim();
+    
+    if (userInput.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập câu trả lời')),
+        const SnackBar(
+          content: Text('Vui lòng nhập câu trả lời trước khi nộp bài'),
+          backgroundColor: Colors.orange,
+        ),
       );
       return;
     }
     
-    final timeSpent = DateTime.now().difference(_startTime!).inSeconds;
-    
+    // Tính điểm sử dụng DictationScoringService
     final result = DictationScoringService.scoreText(
       lessonId: widget.lesson.id,
-      userInput: _textController.text,
+      userInput: userInput,
       correctText: widget.lesson.fullTranscript,
-      timeSpentSeconds: timeSpent,
+      timeSpentSeconds: _startTime != null 
+          ? DateTime.now().difference(_startTime!).inSeconds 
+          : 0,
     );
     
+    // Chuyển đến màn hình kết quả
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => DictationResultScreen(result: result),
+        builder: (context) => DictationResultScreen(
+          result: result,
+        ),
       ),
     );
   }
@@ -103,7 +187,11 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
         actions: [
           IconButton(
             icon: Icon(_showTranscript ? Icons.visibility_off : Icons.visibility),
-            onPressed: _toggleTranscript,
+            onPressed: () {
+              setState(() {
+                _showTranscript = !_showTranscript;
+              });
+            },
             tooltip: _showTranscript ? 'Ẩn script' : 'Xem script',
           ),
         ],
@@ -115,14 +203,21 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
           children: [
             // Info Card
             _buildInfoCard(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
+            
+            // Speed Control
+            _buildSpeedControl(),
+            const SizedBox(height: 16),
             
             // Play Mode Toggle
             _buildPlayModeToggle(),
             const SizedBox(height: 16),
             
             // Audio Controls
-            if (!_isSegmentMode) _buildFullAudioControls() else _buildSegmentControls(),
+            if (!_isSegmentMode) 
+              _buildFullAudioControls() 
+            else 
+              _buildSegmentControls(),
             const SizedBox(height: 24),
             
             // Transcript (if shown)
@@ -415,7 +510,11 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.close, size: 20),
-                  onPressed: _toggleTranscript,
+                  onPressed: () {
+                    setState(() {
+                      _showTranscript = false;
+                    });
+                  },
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),

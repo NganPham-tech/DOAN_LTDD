@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/simple_firebase_auth_service.dart';
 import '../models/home_models.dart' as models;
-
+//D:\DEMOLTDD\wordmaster\lib\providers\simple_firebase_user_provider.dart
 class SimpleFirebaseUserProvider with ChangeNotifier {
   final SimpleFirebaseAuthService _authService = SimpleFirebaseAuthService();
 

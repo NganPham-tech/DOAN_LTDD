@@ -19,6 +19,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoadingApiData = false;
+  // ignore: unused_field
   String? _errorMessage;
   Map<String, dynamic> _apiData = {};
 
@@ -124,7 +125,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           final user = userProvider.currentUser;
           final displayName =
-              user?.fullName ?? user?.email?.split('@')[0] ?? 'Người dùng';
+              user?.fullName ?? user?.email.split('@')[0] ?? 'Người dùng';
           final email = user?.email ?? '';
 
           return RefreshIndicator(

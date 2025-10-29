@@ -1,0 +1,115 @@
+{
+  "@@locale": "ko",
+  
+  "appTitle": "WordMaster",
+  
+  "home": "홈",
+  "decks": "덱",
+  "progress": "진행도",
+  "profile": "프로필",
+  "quiz": "퀴즈",
+
+  "welcomeBack": "WordMaster에 오신 것을 환영합니다!",
+  "welcomeMessage": "프로필 관리와 성과 추적을 위해 로그인하세요",
+  "login": "로그인",
+  "register": "등록",
+  "createAccount": "새 계정 만들기",
+  "logout": "로그아웃",
+  "confirmLogout": "로그아웃 확인",
+  "confirmLogoutMessage": "로그아웃 하시겠습니까?",
+  "cancel": "취소",
+  "confirm": "확인",
+
+  "editProfile": "프로필 편집",
+  "settings": "설정",
+  "notifications": "알림",
+  "language": "언어",
+  "darkMode": "다크 모드",
+  "help": "도움말",
+  "about": "정보",
+
+  "level": "레벨 {level}",
+  
+  "progress_text": "진행도",
+  "currentPoints": "현재 포인트",
+  "nextLevel": "다음 레벨",
+  "totalLearned": "학습한 카드",
+  "mastered": "마스터함",
+  "streak": "연속 기록",
+  "days": "일",
+  "highestStreak": "최고: {days}",
+
+  "flashcards": "플래시카드 덱",
+  "quizCompleted": "퀴즈 완료",
+  "streakDays": "연속 일수",
+
+  "achievements": "주요 성과",
+  "viewAll": "모두 보기",
+  "noAchievements": "아직 성과가 없습니다",
+  "loading": "로딩 중...",
+  "loadingData": "데이터를 로딩 중...",
+  "unlocked": "잠금 해제됨",
+  "locked": "잠금",
+
+  "recentActivities": "최근 활동",
+  "noActivities": "아직 활동이 없습니다",
+
+  "quickSettings": "빠른 설정",
+  "security": "보안",
+  "changePassword": "비밀번호 변경",
+  "notificationSettings": "알림 설정",
+  "helpAndFAQ": "도움말 및 FAQ",
+
+  "notificationTypes": "알림 유형",
+  "studyReminders": "학습 알림",
+  "studyRemindersDesc": "매일 학습 알림 받기",
+  "achievementNotifications": "성과",
+  "achievementNotificationsDesc": "새 성과를 달성할 때 알림",
+  "weeklyProgress": "진행 보고서",
+  "weeklyProgressDesc": "주간 학습 진행 요약",
+
+  "notificationBehavior": "알림 동작",
+  "sound": "소리",
+  "soundDesc": "알림 소리 재생",
+  "vibration": "진동",
+  "vibrationDesc": "알림 시 진동",
+
+  "reminderTime": "알림 시간",
+  "studyReminderTime": "학습 알림 시간",
+  "dailyAt": "매일 오후 8:00",
+  
+  "languageSettings": "언어 설정",
+  "selectLanguage": "언어 선택",
+  "changeLanguageDesc": "앱 표시 언어 변경",
+  "currentLanguage": "현재 언어",
+  "availableLanguages": "사용 가능한 언어",
+  
+  "vietnamese": "베트남어",
+  "english": "영어",
+  "chinese": "중국어",
+  "japanese": "일본어",
+  "korean": "한국어",
+
+  "changeLanguageConfirm": "변경 확인",
+  "changeLanguageMessage": "{language}(으)로 전환하시겠습니까?",
+  "languageChanged": "{language}(으)로 전환되었습니다",
+
+  "infoNote": "참고",
+  "languageChangeNote": "언어 변경은 앱 전체에 적용됩니다. 일부 어휘는 업데이트에 시간이 걸릴 수 있습니다.",
+  "notificationNote": "알림은 꾸준한 학습 습관을 유지하고 목표를 달성하는 데 도움이 됩니다.",
+
+  "joinedSince": "{date}부터 회원",
+
+  "error": "오류",
+  "success": "성공",
+  "failed": "실패",
+  "retry": "다시 시도",
+  "close": "닫기",
+  "save": "저장",
+  "delete": "삭제",
+  "edit": "편집",
+  "add": "추가",
+  "search": "검색",
+  "filter": "필터",
+  "sort": "정렬"
+}

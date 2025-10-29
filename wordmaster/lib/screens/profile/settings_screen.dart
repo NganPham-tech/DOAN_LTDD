@@ -4,7 +4,7 @@ import '/../providers/settings_provider.dart';
 import 'notification_settings_screen.dart';
 import 'language_settings_screen.dart';
 import 'help_center_screen.dart';
-
+//D:\DEMOLTDD\wordmaster\lib\screens\profile\settings_screen.dart
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 

@@ -4,20 +4,42 @@ import 'package:flutter/foundation.dart';
 class TtsService {
   static FlutterTts? _flutterTts;
   static bool _isInitialized = false;
+  static bool _isSpeaking = false;
 
   // Khởi tạo TTS
   static Future<void> initialize() async {
     if (_isInitialized) return;
 
     _flutterTts = FlutterTts();
-    
+
     try {
+      // Ensure the plugin will report when speaking completes
+      await _flutterTts!.awaitSpeakCompletion(true);
+
+      // Handlers to track speaking state and errors
+      _flutterTts!.setStartHandler(() {
+        _isSpeaking = true;
+        print('TTS: started speaking');
+      });
+
+      _flutterTts!.setCompletionHandler(() {
+        _isSpeaking = false;
+        print('TTS: completed speaking');
+      });
+
+      _flutterTts!.setErrorHandler((msg) {
+        _isSpeaking = false;
+        print('TTS Error Handler: $msg');
+      });
+
+      // Small pause to let engine finish binding on some devices/emulators
+      await Future.delayed(const Duration(milliseconds: 150));
       // Cấu hình TTS
       await _flutterTts!.setLanguage('en-US'); // Tiếng Anh Mỹ
-      await _flutterTts!.setSpeechRate(0.5);   // Tốc độ vừa phải
-      await _flutterTts!.setVolume(1.0);       // Âm lượng tối đa
-      await _flutterTts!.setPitch(1.0);        // Tông giọng bình thường
-      
+      await _flutterTts!.setSpeechRate(0.5); // Tốc độ vừa phải
+      await _flutterTts!.setVolume(1.0); // Âm lượng tối đa
+      await _flutterTts!.setPitch(1.0); // Tông giọng bình thường
+
       // Cấu hình cho iOS
       if (!kIsWeb) {
         await _flutterTts!.setSharedInstance(true);
@@ -26,7 +48,7 @@ class TtsService {
           [
             IosTextToSpeechAudioCategoryOptions.allowBluetooth,
             IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
-            IosTextToSpeechAudioCategoryOptions.mixWithOthers
+            IosTextToSpeechAudioCategoryOptions.mixWithOthers,
           ],
           IosTextToSpeechAudioMode.spokenAudio,
         );
@@ -34,7 +56,6 @@ class TtsService {
 
       _isInitialized = true;
       print('TTS Service initialized successfully');
-      
     } catch (e) {
       print('Error initializing TTS: $e');
     }
@@ -52,14 +73,28 @@ class TtsService {
     }
 
     try {
-      // Dừng bất kỳ phát âm nào đang chạy
-      await _flutterTts!.stop();
-      
-      // Phát âm văn bản
-      await _flutterTts!.speak(text);
-      print('Speaking: $text');
-      
+      // Guard against concurrent speak calls
+      if (_isSpeaking) {
+        print(
+          'TTS: already speaking, stopping previous utterance before starting new one',
+        );
+        await _flutterTts!.stop();
+        // Give a tiny moment to fully stop
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
+      // On some devices/emulators calling setLanguage immediately before speak avoids errors
+      try {
+        await _flutterTts!.setLanguage('en-US');
+      } catch (_) {}
+
+      print('TTS speaking: $text');
+      var result = await _flutterTts!.speak(text);
+
+      // Some platforms return numeric result codes; log them for diagnosis
+      print('TTS speak result: $result');
     } catch (e) {
+      _isSpeaking = false;
       print('Error speaking text: $e');
     }
   }
@@ -113,7 +148,8 @@ class TtsService {
 
   // Kiểm tra trạng thái
   static bool get isInitialized => _isInitialized;
-  
+  static bool get isSpeaking => _isSpeaking;
+
   // Cleanup
   static void dispose() {
     _flutterTts = null;

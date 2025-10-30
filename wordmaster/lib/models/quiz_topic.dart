@@ -49,40 +49,69 @@ class QuizTopic {
 class QuizQuestion {
   final int id;
   final String question;
+  final String questionType; // 'MultipleChoice', 'Listening', 'FillInBlank'
   final List<String> options;
   final int correctAnswerIndex;
   final String explanation;
   final String difficulty;
 
+  // Thông tin bổ sung cho các loại quiz
+  final String? audioText; // Cho Listening
+  final String? wordBank; // Cho FillInBlank
+  final String? hint; // Cho FillInBlank
+  final String? firstLetter; // Cho FillInBlank
+  final int? wordLength; // Cho FillInBlank
+
   QuizQuestion({
     required this.id,
     required this.question,
+    this.questionType = 'MultipleChoice',
     required this.options,
     required this.correctAnswerIndex,
     required this.explanation,
     required this.difficulty,
+    this.audioText,
+    this.wordBank,
+    this.hint,
+    this.firstLetter,
+    this.wordLength,
   });
 
   factory QuizQuestion.fromMap(Map<String, dynamic> map) {
     return QuizQuestion(
       id: map['id'] ?? 0,
       question: map['question'] ?? '',
+      questionType: map['questionType'] ?? 'MultipleChoice',
       options: List<String>.from(map['options'] ?? []),
       correctAnswerIndex: map['correctAnswerIndex'] ?? 0,
       explanation: map['explanation'] ?? '',
       difficulty: map['difficulty'] ?? 'Easy',
+      audioText: map['audioText'],
+      wordBank: map['wordBank'],
+      hint: map['hint'],
+      firstLetter: map['firstLetter'],
+      wordLength: map['wordLength'],
     );
   }
 
   Map<String, dynamic> toMap() {
-    return {
+    final data = <String, dynamic>{
       'id': id,
       'question': question,
+      'questionType': questionType,
       'options': options,
       'correctAnswerIndex': correctAnswerIndex,
       'explanation': explanation,
       'difficulty': difficulty,
     };
+
+    if (audioText != null) data['audioText'] = audioText!;
+    if (wordBank != null) data['wordBank'] = wordBank!;
+    if (hint != null) data['hint'] = hint!;
+    if (firstLetter != null) data['firstLetter'] = firstLetter!;
+    if (wordLength != null) data['wordLength'] = wordLength!;
+
+    return data;
   }
 }
 

@@ -1,0 +1,155 @@
+{
+  "@@locale": "vi",
+  
+  "appTitle": "WordMaster",
+  "@appTitle": {
+    "description": "Tên ứng dụng"
+  },
+
+  "home": "Trang chủ",
+  "decks": "Bộ thẻ",
+  "quiz": "Quiz",
+  "progress": "Tiến độ",
+  "profile": "Hồ sơ",
+
+  "welcomeBack": "Chào mừng trở lại!",
+  "welcomeMessage": "Đăng nhập để quản lý thông tin cá nhân và theo dõi thành tích của bạn",
+  "login": "Đăng nhập",
+  "register": "Đăng ký",
+  "createAccount": "Tạo tài khoản mới",
+  "logout": "Đăng xuất",
+  "confirmLogout": "Xác nhận đăng xuất",
+  "confirmLogoutMessage": "Bạn có chắc chắn muốn đăng xuất?",
+  "cancel": "Hủy",
+  "confirm": "Xác nhận",
+
+  "editProfile": "Chỉnh sửa hồ sơ",
+  "settings": "Cài đặt",
+  "notifications": "Thông báo",
+  "language": "Ngôn ngữ",
+  "darkMode": "Chế độ tối",
+  "help": "Trợ giúp",
+  "about": "Về ứng dụng",
+  
+  "level": "Level {level}",
+  "@level": {
+    "description": "Cấp độ người dùng",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+
+  "progress_text": "Tiến độ",
+  "currentPoints": "Điểm hiện tại",
+  "nextLevel": "Cấp tiếp theo",
+  "totalLearned": "Từ đã học",
+  "mastered": "Đã thuộc",
+  "streak": "Streak",
+  "days": "ngày",
+  "highestStreak": "Cao nhất: {days}",
+  "@highestStreak": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+
+  "flashcards": "Bộ flashcard",
+  "quizCompleted": "Quiz hoàn thành",
+  "streakDays": "Ngày streak",
+
+  "achievements": "Thành tích nổi bật",
+  "viewAll": "Xem tất cả",
+  "noAchievements": "Chưa có thành tích nào",
+  "loading": "Đang tải...",
+  "loadingData": "Đang tải dữ liệu...",
+  "unlocked": "Đã mở khóa",
+  "locked": "Chưa mở khóa",
+
+  "recentActivities": "Hoạt động gần đây",
+  "noActivities": "Chưa có hoạt động nào",
+
+  "quickSettings": "Cài đặt nhanh",
+  "security": "Bảo mật",
+  "changePassword": "Đổi mật khẩu",
+  "notificationSettings": "Cài đặt thông báo",
+  "helpAndFAQ": "Hỗ trợ và FAQ",
+
+  "notificationTypes": "Loại thông báo",
+  "studyReminders": "Nhắc nhở học tập",
+  "studyRemindersDesc": "Nhận thông báo nhắc nhở học từ vựng hàng ngày",
+  "achievementNotifications": "Thành tích",
+  "achievementNotificationsDesc": "Thông báo khi đạt được thành tích mới",
+  "weeklyProgress": "Báo cáo tiến độ",
+  "weeklyProgressDesc": "Tóm tắt tiến độ học tập hàng tuần",
+
+  "notificationBehavior": "Hành vi thông báo",
+  "sound": "Âm thanh",
+  "soundDesc": "Phát âm thanh khi có thông báo",
+  "vibration": "Rung",
+  "vibrationDesc": "Rung thiết bị khi có thông báo",
+
+  "reminderTime": "Thời gian nhắc nhở",
+  "studyReminderTime": "Giờ nhắc nhở học tập",
+  "dailyAt": "20:00 hàng ngày",
+  
+  "languageSettings": "Cài đặt ngôn ngữ",
+  "selectLanguage": "Chọn ngôn ngữ",
+  "changeLanguageDesc": "Thay đổi ngôn ngữ hiển thị của ứng dụng",
+  "currentLanguage": "Ngôn ngữ hiện tại",
+  "availableLanguages": "Ngôn ngữ có sẵn",
+  
+  "vietnamese": "Tiếng Việt",
+  "english": "English",
+  "chinese": "中文",
+  "japanese": "日本語",
+  "korean": "한국어",
+
+  "changeLanguageConfirm": "Xác nhận thay đổi",
+  "changeLanguageMessage": "Bạn có muốn chuyển sang {language}?",
+  "@changeLanguageMessage": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "languageChanged": "Đã chuyển sang {language}",
+  "@languageChanged": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+
+  "infoNote": "Lưu ý",
+  "languageChangeNote": "Thay đổi ngôn ngữ sẽ áp dụng cho toàn bộ ứng dụng. Một số từ vựng có thể cần thời gian để cập nhật.",
+  "notificationNote": "Thông báo giúp bạn duy trì thói quen học tập đều đặn và đạt được mục tiêu.",
+
+  "joinedSince": "Tham gia từ {date}",
+  "@joinedSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+
+  "error": "Lỗi",
+  "success": "Thành công",
+  "failed": "Thất bại",
+  "retry": "Thử lại",
+  "close": "Đóng",
+  "save": "Lưu",
+  "delete": "Xóa",
+  "edit": "Chỉnh sửa",
+  "add": "Thêm",
+  "search": "Tìm kiếm",
+  "filter": "Lọc",
+  "sort": "Sắp xếp"
+}
+

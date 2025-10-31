@@ -1,0 +1,115 @@
+{
+  "@@locale": "zh",
+  
+  "appTitle": "WordMaster",
+  
+  "home": "首页",
+  "decks": "卡片组",
+  "progress": "进度",
+  "profile": "个人资料",
+  "quiz": "测验",
+
+  "welcomeBack": "欢迎使用 WordMaster！",
+  "welcomeMessage": "登录以管理您的个人资料并跟踪您的成就",
+  "login": "登录",
+  "register": "注册",
+  "createAccount": "创建新账户",
+  "logout": "退出登录",
+  "confirmLogout": "确认退出",
+  "confirmLogoutMessage": "确定要退出登录吗？",
+  "cancel": "取消",
+  "confirm": "确认",
+
+  "editProfile": "编辑个人资料",
+  "settings": "设置",
+  "notifications": "通知",
+  "language": "语言",
+  "darkMode": "深色模式",
+  "help": "帮助",
+  "about": "关于",
+
+  "level": "等级 {level}",
+  
+  "progress_text": "进度",
+  "currentPoints": "当前积分",
+  "nextLevel": "下一等级",
+  "totalLearned": "已学习卡片",
+  "mastered": "已掌握",
+  "streak": "连续记录",
+  "days": "天",
+  "highestStreak": "最高: {days}",
+
+  "flashcards": "单词卡组",
+  "quizCompleted": "已完成测验",
+  "streakDays": "连续天数",
+
+  "achievements": "主要成就",
+  "viewAll": "查看全部",
+  "noAchievements": "尚无成就",
+  "loading": "加载中...",
+  "loadingData": "正在加载数据...",
+  "unlocked": "已解锁",
+  "locked": "未解锁",
+
+  "recentActivities": "最近活动",
+  "noActivities": "尚无活动",
+
+  "quickSettings": "快速设置",
+  "security": "安全",
+  "changePassword": "修改密码",
+  "notificationSettings": "通知设置",
+  "helpAndFAQ": "帮助与常见问题",
+
+  "notificationTypes": "通知类型",
+  "studyReminders": "学习提醒",
+  "studyRemindersDesc": "接收每日学习提醒",
+  "achievementNotifications": "成就",
+  "achievementNotificationsDesc": "解锁新成就时通知",
+  "weeklyProgress": "进度报告",
+  "weeklyProgressDesc": "每周学习进度摘要",
+
+  "notificationBehavior": "通知行为",
+  "sound": "声音",
+  "soundDesc": "通知时播放声音",
+  "vibration": "振动",
+  "vibrationDesc": "通知时振动设备",
+
+  "reminderTime": "提醒时间",
+  "studyReminderTime": "学习提醒时间",
+  "dailyAt": "每日晚上8点",
+  
+  "languageSettings": "语言设置",
+  "selectLanguage": "选择语言",
+  "changeLanguageDesc": "更改应用显示语言",
+  "currentLanguage": "当前语言",
+  "availableLanguages": "可用语言",
+  
+  "vietnamese": "越南语",
+  "english": "英语",
+  "chinese": "中文",
+  "japanese": "日语",
+  "korean": "韩语",
+
+  "changeLanguageConfirm": "确认更改",
+  "changeLanguageMessage": "是否切换至{language}？",
+  "languageChanged": "已切换至{language}",
+
+  "infoNote": "注意",
+  "languageChangeNote": "语言更改将应用于整个应用。部分词汇可能需要时间更新。",
+  "notificationNote": "通知有助于保持学习习惯并实现目标。",
+
+  "joinedSince": "自{date}成为会员",
+
+  "error": "错误",
+  "success": "成功",
+  "failed": "失败",
+  "retry": "重试",
+  "close": "关闭",
+  "save": "保存",
+  "delete": "删除",
+  "edit": "编辑",
+  "add": "添加",
+  "search": "搜索",
+  "filter": "筛选",
+  "sort": "排序"
+}

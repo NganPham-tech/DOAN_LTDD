@@ -9,6 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
   fl_chart: ^1.1.1
   
   http: ^1.5.0
@@ -62,4 +65,5 @@ flutter:
     - .env
     - images/Bannerapp.png
     - images/timo.jpg
+  generate: true
   

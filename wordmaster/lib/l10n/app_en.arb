@@ -1,0 +1,115 @@
+{
+  "@@locale": "en",
+  
+  "appTitle": "WordMaster",
+  
+  "home": "Home",
+  "decks": "Decks",
+  "progress": "Progress",
+  "profile": "Profile",
+  "quiz": "Quiz",
+
+  "welcomeBack": "Welcome to WordMaster!",
+  "welcomeMessage": "Sign in to manage your profile and track your achievements",
+  "login": "Login",
+  "register": "Register",
+  "createAccount": "Create New Account",
+  "logout": "Logout",
+  "confirmLogout": "Confirm Logout",
+  "confirmLogoutMessage": "Are you sure you want to logout?",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+
+  "editProfile": "Edit Profile",
+  "settings": "Settings",
+  "notifications": "Notifications",
+  "language": "Language",
+  "darkMode": "Dark Mode",
+  "help": "Help",
+  "about": "About",
+  
+  "level": "Level {level}",
+  
+  "progress_text": "Progress",
+  "currentPoints": "Current Points",
+  "nextLevel": "Next Level",
+  "totalLearned": "Cards Learned",
+  "mastered": "Mastered",
+  "streak": "Streak",
+  "days": "days",
+  "highestStreak": "Highest: {days}",
+
+  "flashcards": "Flashcard Decks",
+  "quizCompleted": "Quizzes Completed",
+  "streakDays": "Streak Days",
+
+  "achievements": "Notable Achievements",
+  "viewAll": "View All",
+  "noAchievements": "No achievements yet",
+  "loading": "Loading...",
+  "loadingData": "Loading data...",
+  "unlocked": "Unlocked",
+  "locked": "Locked",
+
+  "recentActivities": "Recent Activities",
+  "noActivities": "No activities yet",
+
+  "quickSettings": "Quick Settings",
+  "security": "Security",
+  "changePassword": "Change Password",
+  "notificationSettings": "Notification Settings",
+  "helpAndFAQ": "Help & FAQ",
+
+  "notificationTypes": "Notification Types",
+  "studyReminders": "Study Reminders",
+  "studyRemindersDesc": "Receive daily study reminders",
+  "achievementNotifications": "Achievements",
+  "achievementNotificationsDesc": "Notify when you unlock new achievements",
+  "weeklyProgress": "Progress Report",
+  "weeklyProgressDesc": "Weekly learning progress summary",
+
+  "notificationBehavior": "Notification Behavior",
+  "sound": "Sound",
+  "soundDesc": "Play sound for notifications",
+  "vibration": "Vibration",
+  "vibrationDesc": "Vibrate device for notifications",
+
+  "reminderTime": "Reminder Time",
+  "studyReminderTime": "Study Reminder Time",
+  "dailyAt": "Daily at 8:00 PM",
+  
+  "languageSettings": "Language Settings",
+  "selectLanguage": "Select Language",
+  "changeLanguageDesc": "Change app display language",
+  "currentLanguage": "Current Language",
+  "availableLanguages": "Available Languages",
+  
+  "vietnamese": "Tiếng Việt",
+  "english": "English",
+  "chinese": "中文",
+  "japanese": "日本語",
+  "korean": "한국어",
+
+  "changeLanguageConfirm": "Confirm Change",
+  "changeLanguageMessage": "Do you want to switch to {language}?",
+  "languageChanged": "Switched to {language}",
+
+  "infoNote": "Note",
+  "languageChangeNote": "Language changes will apply to the entire app. Some vocabulary may take time to update.",
+  "notificationNote": "Notifications help you maintain consistent study habits and achieve your goals.",
+
+  "joinedSince": "Member since {date}",
+
+  "error": "Error",
+  "success": "Success",
+  "failed": "Failed",
+  "retry": "Retry",
+  "close": "Close",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "add": "Add",
+  "search": "Search",
+  "filter": "Filter",
+  "sort": "Sort"
+}

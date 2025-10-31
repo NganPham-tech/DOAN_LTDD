@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../flashcard/flashcard_overview_screen.dart';
 import '../dictation/dictation_list_screen.dart';
+import '/providers/simple_firebase_user_provider.dart';
+import '/services/api_service.dart';
 
+//D:\DEMOLTDD\wordmaster\lib\screens\home\home_screen.dart
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,13 +15,25 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Dummy data - sẽ thay thế bằng API call thực tế
-  final Map<String, dynamic> _userProgress = {
-    'todayLearned': 8,
+  bool _isLoading = true;
+  
+  Map<String, dynamic> _userProgress = {
+    'todayLearned': 0,
     'dailyGoal': 20,
-    'streak': 4,
-    'totalPoints': 1200,
+    'currentStreak': 0,
+    'totalPoints': 0,
+    'progressPercentage': 0,
   };
+
+  List<Map<String, dynamic>> _recommendedDecks = [];
+  List<Map<String, dynamic>> _recentActivities = [];
+  Map<String, dynamic> _statistics = {
+    'cardsToReview': 0,
+    'todayLearned': 0,
+  };
+  
+  // 🆕 THÊM BIẾN CHO FLASHCARD OF THE DAY
+  Map<String, dynamic> _todayFlashcard = {};
 
   final List<Map<String, dynamic>> _quickActions = [
     {'icon': Icons.flash_on, 'label': 'Flashcard', 'badge': 0},
@@ -28,55 +44,114 @@ class _HomeScreenState extends State<HomeScreen> {
     {'icon': Icons.menu_book, 'label': 'Grammar', 'badge': 2},
   ];
 
-  final List<Map<String, dynamic>> _recommendedDecks = [
-    {
-      'id': 1,
-      'title': 'TOEIC Essential 500',
-      'thumbnail': null,
-      'cardsCount': 500
-    },
-    {
-      'id': 2,
-      'title': 'Business English',
-      'thumbnail': null,
-      'cardsCount': 300
-    },
-  ];
+
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHomeData();
+  }
+
+  Future<void> _loadHomeData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final userProvider = Provider.of<SimpleFirebaseUserProvider>(
+        context,
+        listen: false,
+      );
+
+      if (!userProvider.isLoggedIn) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final firebaseUid = userProvider.currentUser?.id;
+      
+      // Sử dụng ApiService với userId=2 cho dữ liệu người dùng
+      final data = await ApiService.get('/users/home?firebaseUid=$firebaseUid');
+      
+      print('Home API response: Success');
+
+      if (data['success'] == true) {
+        setState(() {
+          _userProgress = Map<String, dynamic>.from(
+            data['data']['userProgress'] ?? {}
+          );
+          _recommendedDecks = List<Map<String, dynamic>>.from(
+            data['data']['recommendedDecks'] ?? []
+          );
+          _recentActivities = List<Map<String, dynamic>>.from(
+            data['data']['recentActivities'] ?? []
+          );
+          _statistics = Map<String, dynamic>.from(
+            data['data']['statistics'] ?? {}
+          );
+          // 🆕 PARSE FLASHCARD OF THE DAY
+          _todayFlashcard = Map<String, dynamic>.from(
+            data['data']['todayFlashcard'] ?? {}
+          );
+          _isLoading = false;
+        });
+        print('Home data loaded successfully');
+      }
+    } catch (e) {
+      print('Error loading home data: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: Colors.grey[50],
+        body: const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFd63384),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // HEADER
-              _buildHeader(),
-              const SizedBox(height: 16),
-              
-              // SEARCH BAR
-              _buildSearchBar(),
-              const SizedBox(height: 24),
-              
-              // PROGRESS CARD
-              _buildProgressCard(),
-              const SizedBox(height: 32),
-              
-              // QUICK ACTIONS
-              _buildQuickActions(),
-              const SizedBox(height: 32),
-              
-              // RECOMMENDED DECKS
-              _buildRecommendedSection(),
-              const SizedBox(height: 32),
-              
-              // RECENT ACTIVITY
-              _buildRecentActivity(),
-              const SizedBox(height: 32),
-            ],
+        child: RefreshIndicator(
+          color: const Color(0xFFd63384),
+          onRefresh: _loadHomeData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+                _buildHeader(),
+                const SizedBox(height: 16),
+                _buildSearchBar(),
+                const SizedBox(height: 24),
+                _buildProgressCard(),
+                const SizedBox(height: 24),
+                
+                // 🆕 FLASHCARD OF THE DAY
+                if (_todayFlashcard.isNotEmpty) ...[
+                  _buildFlashcardOfTheDay(),
+                  const SizedBox(height: 24),
+                ],
+                
+                _buildQuickActions(),
+                const SizedBox(height: 32),
+                _buildRecommendedSection(),
+                const SizedBox(height: 32),
+                _buildRecentActivity(),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),
@@ -86,7 +161,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHeader() {
     return Row(
       children: [
-        // Logo & App Name
         Row(
           children: [
             Image.asset(
@@ -117,23 +191,21 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        
         const Spacer(),
-        
-        // Notification & Avatar
         Row(
           children: [
             IconButton(
               icon: Badge(
-                label: const Text('3'),
+                label: Text('${_statistics['cardsToReview'] ?? 0}'),
+                isLabelVisible: (_statistics['cardsToReview'] ?? 0) > 0,
                 child: Icon(Icons.notifications, color: Colors.grey[600]),
               ),
               onPressed: () {},
             ),
             CircleAvatar(
               radius: 18,
-              backgroundColor: Color(0xFFd63384),
-              child: Icon(
+              backgroundColor: const Color(0xFFd63384),
+              child: const Icon(
                 Icons.person,
                 color: Colors.white,
                 size: 20,
@@ -171,7 +243,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProgressCard() {
-    final progress = _userProgress['todayLearned'] / _userProgress['dailyGoal'];
+    final todayLearned = _userProgress['todayLearned'] ?? 0;
+    final dailyGoal = _userProgress['dailyGoal'] ?? 20;
+    final progress = dailyGoal > 0 ? todayLearned / dailyGoal : 0.0;
     
     return Container(
       padding: const EdgeInsets.all(20),
@@ -182,6 +256,13 @@ class _HomeScreenState extends State<HomeScreen> {
           colors: [Color(0xFFd63384), Color(0xFFa61e4d)],
         ),
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFd63384).withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             children: [
               Text(
-                '${_userProgress['todayLearned']}/${_userProgress['dailyGoal']} từ',
+                '$todayLearned/$dailyGoal từ',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -216,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Icon(Icons.local_fire_department, color: Colors.orange, size: 16),
                     const SizedBox(width: 4),
                     Text(
-                      'Streak: ${_userProgress['streak']} ngày',
+                      'Streak: ${_userProgress['currentStreak'] ?? 0} ngày',
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.white,
@@ -229,7 +310,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          // Progress Bar
           Stack(
             children: [
               Container(
@@ -239,14 +319,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 800),
-                curve: Curves.easeOut,
-                height: 8,
-                width: MediaQuery.of(context).size.width * 0.7 * progress,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
+              FractionallySizedBox(
+                widthFactor: progress.clamp(0.0, 1.0),
+                child: Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.5),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -256,7 +342,12 @@ class _HomeScreenState extends State<HomeScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                // Navigate to review screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const FlashcardOverviewScreen(),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -280,7 +371,158 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // 🆕 FLASHCARD OF THE DAY WIDGET
+  Widget _buildFlashcardOfTheDay() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFfff9fb), Color(0xFFfff0f5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFd63384).withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFd63384).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.wb_sunny_rounded,
+                  color: Color(0xFFd63384),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Từ vựng hôm nay',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D3436),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFd63384).withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _todayFlashcard['question'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2D3436),
+                  ),
+                ),
+                if (_todayFlashcard['phonetic'] != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _todayFlashcard['phonetic'],
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFf8f9fa),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _todayFlashcard['answer'] ?? '',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[800],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                if (_todayFlashcard['example'] != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Ví dụ:',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _todayFlashcard['example'],
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[700],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const FlashcardOverviewScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                    label: Text(
+                      'Học từ deck "${_todayFlashcard['deckName'] ?? 'Unknown'}"',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFFd63384),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildQuickActions() {
+    // Cập nhật badge từ statistics
+    _quickActions[1]['badge'] = _statistics['cardsToReview'] ?? 0;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -315,12 +557,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActionTile({required IconData icon, required String label, required int badge}) {
+  Widget _buildActionTile({
+    required IconData icon,
+    required String label,
+    required int badge,
+  }) {
     return GestureDetector(
-      onTap: () {
-        // Handle navigation to each feature
-        _handleFeatureNavigation(label);
-      },
+      onTap: () => _handleFeatureNavigation(label),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -339,7 +582,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Badge(
               isLabelVisible: badge > 0,
               label: Text(badge.toString()),
-              child: Icon(icon, size: 28, color: Color(0xFFd63384)),
+              child: Icon(icon, size: 28, color: const Color(0xFFd63384)),
             ),
             const SizedBox(height: 8),
             Text(
@@ -357,35 +600,27 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleFeatureNavigation(String feature) {
-    // Implement navigation logic for each feature
     switch (feature) {
       case 'Flashcard':
-        Navigator.push(
-          context, 
-          MaterialPageRoute(builder: (_) => const FlashcardOverviewScreen())
-        );
-        break;
       case 'Ôn tập':
         Navigator.push(
-          context, 
-          MaterialPageRoute(builder: (_) => const FlashcardOverviewScreen())
+          context,
+          MaterialPageRoute(builder: (_) => const FlashcardOverviewScreen()),
         );
-        break;
-      case 'Quiz':
-        // Navigator.push(context, MaterialPageRoute(builder: (_) => QuizScreen()));
         break;
       case 'Dictation':
         Navigator.push(
-          context, 
-          MaterialPageRoute(builder: (_) => const DictationListScreen())
+          context,
+          MaterialPageRoute(builder: (_) => const DictationListScreen()),
         );
         break;
-      case 'Shadowing':
-        // Navigator.push(context, MaterialPageRoute(builder: (_) => ShadowingScreen()));
-        break;
-      case 'Grammar':
-        // Navigator.push(context, MaterialPageRoute(builder: (_) => GrammarScreen()));
-        break;
+      default:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Tính năng $feature đang phát triển'),
+            backgroundColor: const Color(0xFFd63384),
+          ),
+        );
     }
   }
 
@@ -401,17 +636,30 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 160,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: _recommendedDecks.length,
-            itemBuilder: (context, index) {
-              final deck = _recommendedDecks[index];
-              return _buildDeckCard(deck);
-            },
-          ),
-        ),
+        _recommendedDecks.isEmpty
+            ? Container(
+                height: 160,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    'Chưa có deck gợi ý',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ),
+              )
+            : SizedBox(
+                height: 160,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _recommendedDecks.length,
+                  itemBuilder: (context, index) {
+                    return _buildDeckCard(_recommendedDecks[index]);
+                  },
+                ),
+              ),
       ],
     );
   }
@@ -439,12 +687,23 @@ class _HomeScreenState extends State<HomeScreen> {
               topLeft: Radius.circular(12),
               topRight: Radius.circular(12),
             ),
-            child: Image.asset(
-              'images/timo.jpg',
-              height: 80,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
+            child: deck['thumbnail'] != null
+                ? Image.network(
+                    deck['thumbnail'],
+                    height: 80,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 80,
+                      color: const Color(0xFFf8f9fa),
+                      child: const Icon(Icons.image, size: 40, color: Colors.grey),
+                    ),
+                  )
+                : Container(
+                    height: 80,
+                    color: const Color(0xFFf8f9fa),
+                    child: const Icon(Icons.menu_book, size: 40, color: Color(0xFFd63384)),
+                  ),
           ),
           Padding(
             padding: const EdgeInsets.all(8),
@@ -452,7 +711,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  deck['title'],
+                  deck['title'] ?? 'Unknown Deck',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -462,7 +721,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${deck['cardsCount']} thẻ',
+                  '${deck['cardsCount'] ?? 0} thẻ',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],
@@ -493,39 +752,66 @@ class _HomeScreenState extends State<HomeScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Column(
-            children: [
-              _buildActivityItem('Bạn hoàn thành Quiz: Travel — 8/10'),
-              _buildActivityItem('Học xong 15 từ trong "Business English"'),
-              _buildActivityItem('Đạt streak 4 ngày liên tiếp'),
-            ],
-          ),
+          child: _recentActivities.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: Text(
+                      'Chưa có hoạt động nào',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  ),
+                )
+              : Column(
+                  children: _recentActivities
+                      .map((activity) => _buildActivityItem(
+                            activity['activity'] ?? '',
+                            activity['timeAgo'] ?? '',
+                            activity['icon'] ?? 'book',
+                          ))
+                      .toList(),
+                ),
         ),
       ],
     );
   }
 
-  Widget _buildActivityItem(String activity) {
+  Widget _buildActivityItem(String activity, String timeAgo, String iconType) {
+    IconData icon;
+    Color iconColor;
+
+    switch (iconType) {
+      case 'quiz':
+        icon = Icons.quiz;
+        iconColor = const Color(0xFFae3ec9);
+        break;
+      case 'repeat':
+        icon = Icons.repeat;
+        iconColor = const Color(0xFFf06595);
+        break;
+      default:
+        icon = Icons.check_circle;
+        iconColor = const Color(0xFFd63384);
+    }
+
     return ListTile(
       leading: Container(
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Color(0xFFd63384).withOpacity(0.1),
+          color: iconColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(Icons.check_circle, color: Color(0xFFd63384), size: 20),
+        child: Icon(icon, color: iconColor, size: 20),
       ),
       title: Text(
         activity,
         style: const TextStyle(fontSize: 14),
       ),
       trailing: Text(
-        '2h trước',
+        timeAgo,
         style: TextStyle(fontSize: 12, color: Colors.grey[500]),
       ),
     );
   }
-
-
 }

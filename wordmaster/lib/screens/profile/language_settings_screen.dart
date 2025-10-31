@@ -1,5 +1,8 @@
+// lib/screens/profile/language_settings_screen.dart
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import '/../l10n/app_localizations.dart';
+import '../../providers/locale_provider.dart';
 
 class LanguageSettingsScreen extends StatefulWidget {
   const LanguageSettingsScreen({super.key});
@@ -9,60 +12,29 @@ class LanguageSettingsScreen extends StatefulWidget {
 }
 
 class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
-  String _selectedLanguage = 'vi';
+  
+  void _showChangeLanguageDialog(BuildContext context, Locale locale) {
+    final l10n = AppLocalizations.of(context)!;
+    final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
+    final languageName = localeProvider.getNativeName(locale.languageCode);
 
-  final List<Map<String, String>> _languages = [
-    {
-      'code': 'vi',
-      'name': 'Tiếng Việt',
-      'nativeName': 'Tiếng Việt',
-      'flag': '🇻🇳',
-    },
-    {'code': 'en', 'name': 'English', 'nativeName': 'English', 'flag': '🇺🇸'},
-    {'code': 'zh', 'name': 'Chinese', 'nativeName': '中文', 'flag': '🇨🇳'},
-    {'code': 'ja', 'name': 'Japanese', 'nativeName': '日本語', 'flag': '🇯🇵'},
-    {'code': 'ko', 'name': 'Korean', 'nativeName': '한국어', 'flag': '🇰🇷'},
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSelectedLanguage();
-  }
-
-  Future<void> _loadSelectedLanguage() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _selectedLanguage = prefs.getString('selected_language') ?? 'vi';
-    });
-  }
-
-  Future<void> _saveLanguage(String languageCode) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selected_language', languageCode);
-    setState(() {
-      _selectedLanguage = languageCode;
-    });
-  }
-
-  void _showChangeLanguageDialog(String languageCode, String languageName) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Xác nhận thay đổi'),
-        content: Text('Bạn có muốn chuyển sang $languageName?'),
+        title: Text(l10n.changeLanguageConfirm),
+        content: Text(l10n.changeLanguageMessage(languageName)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _saveLanguage(languageCode);
+              localeProvider.setLocale(locale);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Đã chuyển sang $languageName'),
+                  content: Text(l10n.languageChanged(languageName)),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -71,7 +43,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
               backgroundColor: const Color(0xFFd63384),
               foregroundColor: Colors.white,
             ),
-            child: const Text('Xác nhận'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -80,9 +52,12 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final localeProvider = Provider.of<LocaleProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cài đặt ngôn ngữ'),
+        title: Text(l10n.languageSettings),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -100,26 +75,26 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
               ),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.language, color: Colors.white, size: 32),
-                SizedBox(width: 16),
+                const Icon(Icons.language, color: Colors.white, size: 32),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Chọn ngôn ngữ',
-                        style: TextStyle(
+                        l10n.selectLanguage,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
-                        'Thay đổi ngôn ngữ hiển thị của ứng dụng',
-                        style: TextStyle(color: Colors.white, fontSize: 14),
+                        l10n.changeLanguageDesc,
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
                       ),
                     ],
                   ),
@@ -130,9 +105,9 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
           const SizedBox(height: 24),
 
           // Current Language
-          const Text(
-            'Ngôn ngữ hiện tại',
-            style: TextStyle(
+          Text(
+            l10n.currentLanguage,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Color(0xFFd63384),
@@ -152,9 +127,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
             child: Row(
               children: [
                 Text(
-                  _languages.firstWhere(
-                    (lang) => lang['code'] == _selectedLanguage,
-                  )['flag']!,
+                  localeProvider.getFlag(localeProvider.locale.languageCode),
                   style: const TextStyle(fontSize: 24),
                 ),
                 const SizedBox(width: 16),
@@ -162,18 +135,14 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _languages.firstWhere(
-                        (lang) => lang['code'] == _selectedLanguage,
-                      )['nativeName']!,
+                      localeProvider.getNativeName(localeProvider.locale.languageCode),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      _languages.firstWhere(
-                        (lang) => lang['code'] == _selectedLanguage,
-                      )['name']!,
+                      localeProvider.getLanguageName(localeProvider.locale.languageCode),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
@@ -189,9 +158,9 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
           const SizedBox(height: 32),
 
           // Available Languages
-          const Text(
-            'Ngôn ngữ có sẵn',
-            style: TextStyle(
+          Text(
+            l10n.availableLanguages,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Color(0xFFd63384),
@@ -199,7 +168,9 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
           ),
           const SizedBox(height: 12),
 
-          ..._languages.map((language) => _buildLanguageItem(language)),
+          ...LocaleProvider.supportedLocales.map((locale) => 
+            _buildLanguageItem(context, locale, localeProvider)
+          ),
 
           const SizedBox(height: 32),
 
@@ -220,7 +191,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Lưu ý',
+                        l10n.infoNote,
                         style: TextStyle(
                           color: Colors.blue.shade800,
                           fontWeight: FontWeight.bold,
@@ -228,7 +199,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Thay đổi ngôn ngữ sẽ áp dụng cho toàn bộ ứng dụng. Một số từ vựng có thể cần thời gian để cập nhật.',
+                        l10n.languageChangeNote,
                         style: TextStyle(
                           color: Colors.blue.shade700,
                           fontSize: 13,
@@ -245,8 +216,13 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
     );
   }
 
-  Widget _buildLanguageItem(Map<String, String> language) {
-    final isSelected = language['code'] == _selectedLanguage;
+  Widget _buildLanguageItem(
+    BuildContext context, 
+    Locale locale, 
+    LocaleProvider localeProvider
+  ) {
+    final isSelected = locale == localeProvider.locale;
+    final languageCode = locale.languageCode;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -276,20 +252,20 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
             ),
             child: Center(
               child: Text(
-                language['flag']!,
+                localeProvider.getFlag(languageCode),
                 style: const TextStyle(fontSize: 20),
               ),
             ),
           ),
           title: Text(
-            language['nativeName']!,
+            localeProvider.getNativeName(languageCode),
             style: TextStyle(
               fontWeight: FontWeight.w600,
               color: isSelected ? const Color(0xFFd63384) : null,
             ),
           ),
           subtitle: Text(
-            language['name']!,
+            localeProvider.getLanguageName(languageCode),
             style: TextStyle(
               color: isSelected
                   ? const Color(0xFFd63384).withValues(alpha: 0.8)
@@ -301,10 +277,7 @@ class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
               : const Icon(Icons.radio_button_unchecked, color: Colors.grey),
           onTap: isSelected
               ? null
-              : () => _showChangeLanguageDialog(
-                  language['code']!,
-                  language['nativeName']!,
-                ),
+              : () => _showChangeLanguageDialog(context, locale),
         ),
       ),
     );

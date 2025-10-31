@@ -8,7 +8,6 @@ class DeckProvider with ChangeNotifier {
   List<Deck> _publicDecks = [];
   bool _isLoading = false;
   String? _error;
-  int? _currentUserId;
 
   List<Deck> get decks => _decks;
   List<Deck> get publicDecks => _publicDecks;
@@ -16,7 +15,7 @@ class DeckProvider with ChangeNotifier {
   String? get error => _error;
 
   void setCurrentUser(int userId) {
-    _currentUserId = userId;
+    // User ID is now handled directly in method parameters
   }
 
   Future<void> loadUserDecks(int userId) async {

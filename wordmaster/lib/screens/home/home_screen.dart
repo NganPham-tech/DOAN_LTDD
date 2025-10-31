@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../flashcard/flashcard_overview_screen.dart';
 import '../dictation/dictation_list_screen.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'dart:io';
 import '/providers/simple_firebase_user_provider.dart';
+import '/services/api_service.dart';
 
 //D:\DEMOLTDD\wordmaster\lib\screens\home\home_screen.dart
 
@@ -46,13 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {'icon': Icons.menu_book, 'label': 'Grammar', 'badge': 2},
   ];
 
-  String get _baseUrl {
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:8080';
-    } else {
-      return 'http://localhost:8080';
-    }
-  }
+
 
   @override
   void initState() {
@@ -78,36 +70,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final firebaseUid = userProvider.currentUser?.id;
       
-      final response = await http.get(
-        Uri.parse('$_baseUrl/users/home?firebaseUid=$firebaseUid'),
-      ).timeout(const Duration(seconds: 10));
+      // Sử dụng ApiService với userId=2 cho dữ liệu người dùng
+      final data = await ApiService.get('/users/home?firebaseUid=$firebaseUid');
+      
+      print('Home API response: Success');
 
-      print('Home API response: ${response.statusCode}');
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true) {
-          setState(() {
-            _userProgress = Map<String, dynamic>.from(
-              data['data']['userProgress'] ?? {}
-            );
-            _recommendedDecks = List<Map<String, dynamic>>.from(
-              data['data']['recommendedDecks'] ?? []
-            );
-            _recentActivities = List<Map<String, dynamic>>.from(
-              data['data']['recentActivities'] ?? []
-            );
-            _statistics = Map<String, dynamic>.from(
-              data['data']['statistics'] ?? {}
-            );
-            // 🆕 PARSE FLASHCARD OF THE DAY
-            _todayFlashcard = Map<String, dynamic>.from(
-              data['data']['todayFlashcard'] ?? {}
-            );
-            _isLoading = false;
-          });
-          print('Home data loaded successfully');
-        }
+      if (data['success'] == true) {
+        setState(() {
+          _userProgress = Map<String, dynamic>.from(
+            data['data']['userProgress'] ?? {}
+          );
+          _recommendedDecks = List<Map<String, dynamic>>.from(
+            data['data']['recommendedDecks'] ?? []
+          );
+          _recentActivities = List<Map<String, dynamic>>.from(
+            data['data']['recentActivities'] ?? []
+          );
+          _statistics = Map<String, dynamic>.from(
+            data['data']['statistics'] ?? {}
+          );
+          // 🆕 PARSE FLASHCARD OF THE DAY
+          _todayFlashcard = Map<String, dynamic>.from(
+            data['data']['todayFlashcard'] ?? {}
+          );
+          _isLoading = false;
+        });
+        print('Home data loaded successfully');
       }
     } catch (e) {
       print('Error loading home data: $e');

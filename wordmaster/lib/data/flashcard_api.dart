@@ -117,100 +117,7 @@
 //   }
 // }
 
-// class Category {
-//   final int id;
-//   final String name;
-//   final String description;
-//   final IconData icon;
-//   final String colorCode;
-//   final int deckCount;
 
-//   Category({
-//     required this.id,
-//     required this.name,
-//     required this.description,
-//     required this.icon,
-//     required this.colorCode,
-//     required this.deckCount,
-//   });
-// }
-
-// class Deck {
-//   final int id;
-//   final int categoryId;
-//   final String name;
-//   final String description;
-//   final String? thumbnail;
-//   final int totalCards;
-//   final int learnedCards;
-//   final double rating;
-//   final bool isPublic;
-
-//   Deck({
-//     required this.id,
-//     required this.categoryId,
-//     required this.name,
-//     required this.description,
-//     this.thumbnail,
-//     required this.totalCards,
-//     required this.learnedCards,
-//     required this.rating,
-//     required this.isPublic,
-//   });
-
-//   double get progress => totalCards > 0 ? learnedCards / totalCards : 0;
-// }
-
-// class Flashcard {
-//   final int id;
-//   final int deckId;
-//   final String type;
-//   final String question;
-//   final String answer;
-//   final String? example;
-//   final String? phonetic;
-//   final String? imagePath;
-//   final String? difficulty;
-//   final String? wordType;
-//   bool isFlipped;
-//   bool isRemembered;
-
-//   Flashcard({
-//     required this.id,
-//     required this.deckId,
-//     required this.type,
-//     required this.question,
-//     required this.answer,
-//     this.example,
-//     this.phonetic,
-//     this.imagePath,
-//     this.difficulty,
-//     this.wordType,
-//     this.isFlipped = false,
-//     this.isRemembered = false,
-//   });
-// }
-
-// class LearningUpdate {
-//   final int userId;
-//   final int flashcardId;
-//   final String status;
-//   final bool remembered;
-
-//   LearningUpdate({
-//     required this.userId,
-//     required this.flashcardId,
-//     required this.status,
-//     required this.remembered,
-//   });
-
-//   Map<String, dynamic> toJson() => {
-//     'userId': userId,
-//     'flashcardId': flashcardId,
-//     'status': status,
-//     'remembered': remembered,
-//   };
-// }
 import '../services/api_service.dart';
 import '../models/category.dart';
 import '../models/deck.dart';
@@ -250,4 +157,6 @@ class FlashcardAPI {
     }
     return [];
   }
+
 }
+  

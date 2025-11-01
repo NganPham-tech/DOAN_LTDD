@@ -1,3 +1,4 @@
+// wordmaster/lib/models/flashcard.dart
 enum CardType { vocabulary, grammar }
 
 enum CardStatus { newCard, learning, review, mastered }

@@ -1,70 +1,89 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/simple_firebase_user_provider.dart';
+import 'package:get/get.dart';
+import '../../controllers/auth_controller.dart';
 import 'login_screen.dart';
-import '../home/home_screen.dart';
-
+import '../main_navigation.dart';
+// wordmaster/lib/screens/auth/auth_wrapper.dart
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SimpleFirebaseUserProvider>(
-      builder: (context, userProvider, child) {
-        // Show loading spinner while checking authentication state
-        if (userProvider.isLoading) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+    // Get AuthController instance
+    final authController = Get.find<AuthController>();
 
-        // Show error if there's an authentication error
-        if (userProvider.error != null) {
-          return Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Lỗi xác thực',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red[600],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      userProvider.error!,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      userProvider.clearError();
-                    },
-                    child: const Text('Thử lại'),
-                  ),
-                ],
-              ),
+    return Obx(() {
+      print('🔄 AuthWrapper Obx rebuilding...');
+      print('👤 authController.isLoggedIn: ${authController.isLoggedIn}');
+      print('👤 currentUser: ${authController.currentUser.value?.email}');
+      print('⏳ isLoading: ${authController.isLoading.value}');
+      print('❌ error: ${authController.error.value}');
+      
+      // Show loading spinner while checking authentication state
+      if (authController.isLoading.value) {
+        print('⏳ Showing loading spinner');
+        return const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(
+              color: Color(0xFFd63384),
             ),
-          );
-        }
+          ),
+        );
+      }
 
-        // If user is logged in, show main app
-        if (userProvider.isLoggedIn) {
-          return const HomeScreen();
-        }
+      // Show error if there's an authentication error
+      if (authController.error.value != null) {
+        print('❌ Showing error screen');
+        return Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+                const SizedBox(height: 16),
+                Text(
+                  'Lỗi xác thực',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    authController.error.value!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    authController.clearError();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFd63384),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Thử lại'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
 
-        // If user is not logged in, show login screen
-        return const LoginScreen();
-      },
-    );
+      // If user is logged in, show main app
+      if (authController.isLoggedIn) {
+        print('✅ User is logged in - showing MainNavigation');
+        return const MainNavigation();
+      }
+
+      // If user is not logged in, show login screen
+      print('🔑 User not logged in - showing LoginScreen');
+      return const LoginScreen();
+    });
   }
 }

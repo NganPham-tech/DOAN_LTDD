@@ -1,3 +1,4 @@
+// wordmaster/lib/models/deck.dart
 class DeckCategory {
   final int categoryID;
   final String name;

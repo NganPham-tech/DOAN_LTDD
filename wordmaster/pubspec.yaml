@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
   intl: any
   fl_chart: ^1.1.1
-  
+  get: ^4.7.2
   http: ^1.5.0
   # UI Components
   cupertino_icons: ^1.0.8

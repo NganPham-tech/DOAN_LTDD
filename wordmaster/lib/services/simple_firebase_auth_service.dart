@@ -16,20 +16,20 @@ class SimpleFirebaseAuthService {
     required String fullName,
   }) async {
     try {
-      print('🔥 Attempting Firebase registration...');
+      print('Attempting Firebase registration...');
       final UserCredential userCredential = await _firebaseAuth
           .createUserWithEmailAndPassword(email: email, password: password);
 
       // Update display name
       await userCredential.user?.updateDisplayName(fullName);
-      print('✅ Firebase registration successful!');
+      print('Firebase registration successful!');
 
       return userCredential;
     } on FirebaseAuthException catch (e) {
-      print('❌ Firebase Auth Exception: ${e.code} - ${e.message}');
+      print('Firebase Auth Exception: ${e.code} - ${e.message}');
       throw _handleAuthException(e);
     } catch (e) {
-      print('❌ Generic Exception: $e');
+      print('Generic Exception: $e');
       throw Exception('Đã xảy ra lỗi khi tạo tài khoản: $e');
     }
   }
@@ -40,16 +40,16 @@ class SimpleFirebaseAuthService {
     required String password,
   }) async {
     try {
-      print('🔥 Attempting Firebase login...');
+      print('Attempting Firebase login...');
       final UserCredential userCredential = await _firebaseAuth
           .signInWithEmailAndPassword(email: email, password: password);
-      print('✅ Firebase login successful!');
+      print('Firebase login successful!');
       return userCredential;
     } on FirebaseAuthException catch (e) {
-      print('❌ Firebase Auth Exception: ${e.code} - ${e.message}');
+      print('Firebase Auth Exception: ${e.code} - ${e.message}');
       throw _handleAuthException(e);
     } catch (e) {
-      print('❌ Generic Exception: $e');
+      print('Generic Exception: $e');
       throw Exception('Đã xảy ra lỗi khi đăng nhập: $e');
     }
   }

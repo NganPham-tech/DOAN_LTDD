@@ -1,7 +1,10 @@
+// lib/screens/dictation/dictation_list_screen.dart
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../controllers/dictation_list_controller.dart';
 import '../../models/dictation.dart';
 import 'dictation_play_screen.dart';
-import '../../services/dictation_service.dart';
+
 class DictationListScreen extends StatefulWidget {
   const DictationListScreen({super.key});
 
@@ -9,58 +12,40 @@ class DictationListScreen extends StatefulWidget {
   State<DictationListScreen> createState() => _DictationListScreenState();
 }
 
-class _DictationListScreenState extends State<DictationListScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  List<DictationLesson> _allLessons = [];
-  
+class _DictationListScreenState extends State<DictationListScreen> {
+  late DictationListController controller;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    _loadLessons();
+    print('🏗️ DictationListScreen: initState called');
+    controller = Get.put(DictationListController());
+    print('🎯 DictationListScreen: Controller created in initState');
   }
-  
-  void _loadLessons() async {
-  try {
-    setState(() {
-      // Show loading indicator if needed
-    });
-    
-    final lessons = await DictationService.getAllLessons();
-    
-    setState(() {
-      _allLessons = lessons;
-    });
-  } catch (e) {
-    // Handle error
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error loading lessons: $e')),
-    );
-  }
-}
-  
-  List<DictationLesson> _getLessonsByTab(int tabIndex) {
-    if (tabIndex == 0) return _allLessons; // Tất cả
-    
-    final level = tabIndex == 1 
-        ? DictationLevel.beginner 
-        : tabIndex == 2 
-            ? DictationLevel.intermediate 
-            : DictationLevel.advanced;
-            
-    return _allLessons.where((lesson) => lesson.level == level).toList();
-  }
-  
+
   @override
   Widget build(BuildContext context) {
+    print('🏗️ DictationListScreen: Building screen...');
+    
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text('Dictation'),
         backgroundColor: const Color(0xFFd63384),
         foregroundColor: Colors.white,
+        actions: [
+          // Debug button để test load
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              print('🔄 Manual refresh triggered');
+              controller.forceLoad();
+            },
+            tooltip: 'Refresh data',
+          ),
+        ],
         bottom: TabBar(
-          controller: _tabController,
+          controller: controller.tabController,
           indicatorColor: Colors.white,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
           isScrollable: true,
@@ -73,34 +58,49 @@ class _DictationListScreenState extends State<DictationListScreen> with SingleTi
         ),
       ),
       body: TabBarView(
-        controller: _tabController,
+        controller: controller.tabController,
         children: List.generate(4, (index) {
-          return _buildLessonList(_getLessonsByTab(index));
+          return _buildLessonList(controller, index);
         }),
       ),
     );
   }
   
-  Widget _buildLessonList(List<DictationLesson> lessons) {
-    if (lessons.isEmpty) {
-      return const Center(
-        child: Text(
-          'Chưa có bài học nào',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-        ),
+  Widget _buildLessonList(DictationListController controller, int tabIndex) {
+    return Obx(() {
+      print('🔍 _buildLessonList: isLoading=${controller.isLoading.value}, tabIndex=$tabIndex');
+      
+      if (controller.isLoading.value) {
+        print('⏳ Showing loading indicator');
+        return const Center(child: CircularProgressIndicator());
+      }
+      
+      final lessons = controller.getLessonsByTab(tabIndex);
+      print('📚 Tab $tabIndex has ${lessons.length} lessons');
+      
+      if (lessons.isEmpty) {
+        print('📭 No lessons found for tab $tabIndex');
+        return const Center(
+          child: Text(
+            'Chưa có bài học nào',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        );
+      }
+      
+      print('✅ Building ListView with ${lessons.length} lessons');
+      return ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: lessons.length,
+        itemBuilder: (context, index) {
+          print('🎯 Building lesson card ${index}: ${lessons[index].title}');
+          return _buildLessonCard(lessons[index], controller);
+        },
       );
-    }
-    
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: lessons.length,
-      itemBuilder: (context, index) {
-        return _buildLessonCard(lessons[index]);
-      },
-    );
+    });
   }
   
-  Widget _buildLessonCard(DictationLesson lesson) {
+  Widget _buildLessonCard(DictationLesson lesson, DictationListController controller) {
     return Card(
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 16),
@@ -108,12 +108,7 @@ class _DictationListScreenState extends State<DictationListScreen> with SingleTi
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DictationPlayScreen(lesson: lesson),
-            ),
-          );
+          Get.to(() => DictationPlayScreen(lesson: lesson));
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,7 +138,7 @@ class _DictationListScreenState extends State<DictationListScreen> with SingleTi
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: _getLevelColor(lesson.level),
+                        color: controller.getLevelColor(lesson.level),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -229,12 +224,7 @@ class _DictationListScreenState extends State<DictationListScreen> with SingleTi
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DictationPlayScreen(lesson: lesson),
-                          ),
-                        );
+                        Get.to(() => DictationPlayScreen(lesson: lesson));
                       },
                       icon: const Icon(Icons.play_arrow),
                       label: const Text('Bắt đầu'),
@@ -281,21 +271,10 @@ class _DictationListScreenState extends State<DictationListScreen> with SingleTi
       ),
     );
   }
-  
-  Color _getLevelColor(DictationLevel level) {
-    switch (level) {
-      case DictationLevel.beginner:
-        return Colors.green;
-      case DictationLevel.intermediate:
-        return Colors.orange;
-      case DictationLevel.advanced:
-        return Colors.red;
-    }
-  }
-  
+
   @override
   void dispose() {
-    _tabController.dispose();
+    print('🗑️ DictationListScreen: dispose called');
     super.dispose();
   }
 }

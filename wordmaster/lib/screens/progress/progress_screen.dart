@@ -1,127 +1,91 @@
+// lib/screens/progress/progress_screen.dart
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '/../data/progress_api.dart';
+import '../../../controllers/progress_controller.dart';
+import '../../data/progress_api.dart' as api;
 
-class ProgressScreen extends StatefulWidget {
+class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
 
   @override
-  State<ProgressScreen> createState() => _ProgressScreenState();
-}
-
-class _ProgressScreenState extends State<ProgressScreen> {
-  UserProgress? _userProgress;
-  List<DailyProgress> _weeklyProgress = [];
-  List<Activity> _recentActivities = [];
-  List<Achievement> _achievements = [];
-  bool _isLoading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  Future<void> _loadData() async {
-    if (!mounted) return;
-    
-    try {
-      final progress = await ProgressAPI.getUserProgress();
-      final weekly = await ProgressAPI.getWeeklyProgress();
-      final activities = await ProgressAPI.getRecentActivities();
-      final achievements = await ProgressAPI.getAchievements();
-      
-      if (mounted) {
-        setState(() {
-          _userProgress = progress;
-          _weeklyProgress = weekly;
-          _recentActivities = activities;
-          _achievements = achievements;
-          _isLoading = false;
-          _error = null;
-        });
-      }
-    } catch (e) {
-      print('Error loading progress data: $e');
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _error = 'Không thể tải dữ liệu tiến độ';
-        });
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final controller = Get.put(ProgressController());
+    
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(
-        child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
-                      const SizedBox(height: 16),
-                      Text(
-                        _error!,
-                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadData,
-                        child: const Text('Thử lại'),
-                      ),
-                    ],
-                  ),
-                )
-          : _userProgress == null
-              ? const Center(child: Text('Không có dữ liệu'))
-          : RefreshIndicator(
-              onRefresh: _loadData,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  top: 16,
-                  bottom: 32, // Tăng padding bottom để tránh overflow
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header
-                    _buildHeader(),
-                    const SizedBox(height: 20), // Giảm từ 24
-                    
-                    // Summary Cards
-                    _buildSummaryCards(),
-                    const SizedBox(height: 24), // Giảm từ 32
-                    
-                    // Progress Chart
-                    _buildProgressChart(),
-                    const SizedBox(height: 24), // Giảm từ 32
-                    
-                    // Recent Activities
-                    _buildRecentActivities(),
-                    const SizedBox(height: 24), // Giảm từ 32
-                    
-                    // Achievements
-                    _buildAchievements(),
-                    const SizedBox(height: 20), // Tăng từ 16 để có không gian cuối
-                  ],
-                ),
-              ),
-            ),
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          if (controller.errorMessage.value != null) {
+            return _buildErrorWidget(controller);
+          }
+          
+          if (controller.userProgress.value == null) {
+            return const Center(child: Text('Không có dữ liệu'));
+          }
+          
+          return _buildContent(controller);
+        }),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildErrorWidget(ProgressController controller) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          Text(
+            controller.errorMessage.value!,
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => controller.loadData(),
+            child: const Text('Thử lại'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent(ProgressController controller) {
+    return RefreshIndicator(
+      onRefresh: () => controller.loadData(),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: 32,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(controller),
+            const SizedBox(height: 20),
+            _buildSummaryCards(controller),
+            const SizedBox(height: 24),
+            _buildProgressChart(controller),
+            const SizedBox(height: 24),
+            _buildRecentActivities(controller),
+            const SizedBox(height: 24),
+            _buildAchievements(controller),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(ProgressController controller) {
     return Row(
       children: [
         const Icon(Icons.analytics, size: 28, color: Colors.blueAccent),
@@ -146,7 +110,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               const Icon(Icons.star, size: 16, color: Colors.amber),
               const SizedBox(width: 4),
               Text(
-                'Cấp ${_userProgress?.level ?? 0}',
+                'Cấp ${controller.userProgress.value?.level ?? 0}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -160,7 +124,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildSummaryCards() {
+  Widget _buildSummaryCards(ProgressController controller) {
+    final progress = controller.userProgress.value!;
+    
     return GridView(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -168,35 +134,35 @@ class _ProgressScreenState extends State<ProgressScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 1.0, // Giảm tỷ lệ để tăng chiều cao card
+        childAspectRatio: 1.0,
       ),
       children: [
         _buildSummaryCard(
           icon: Icons.flash_on,
           title: 'Từ đã học',
-          value: (_userProgress?.totalLearned ?? 0).toString(),
-          subtitle: '${_userProgress?.totalMastered ?? 0} đã thuộc',
+          value: progress.totalLearned.toString(),
+          subtitle: '${progress.totalMastered} đã thuộc',
           color: Colors.blue,
         ),
         _buildSummaryCard(
           icon: Icons.local_fire_department,
           title: 'Streak',
-          value: '${_userProgress?.currentStreak ?? 0} ngày',
-          subtitle: 'Cao nhất: ${_userProgress?.bestStreak ?? 0}',
+          value: '${progress.currentStreak} ngày',
+          subtitle: 'Cao nhất: ${progress.bestStreak}',
           color: Colors.orange,
         ),
         _buildSummaryCard(
           icon: Icons.psychology,
           title: 'Tỷ lệ nhớ',
-          value: '${_userProgress?.memoryRate ?? 0}%',
+          value: '${progress.memoryRate}%',
           subtitle: 'Hiệu quả học tập',
           color: Colors.green,
         ),
         _buildSummaryCard(
           icon: Icons.quiz,
           title: 'Bài Quiz',
-          value: (_userProgress?.totalQuizzes ?? 0).toString(),
-          subtitle: '${_userProgress?.perfectQuizCount ?? 0} bài perfect',
+          value: progress.totalQuizzes.toString(),
+          subtitle: '${progress.perfectQuizCount} bài perfect',
           color: Colors.purple,
         ),
       ],
@@ -239,17 +205,17 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   Text(
                     value,
                     style: TextStyle(
-                      fontSize: 18, // Giảm từ 20 xuống 18
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: color,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2), // Giảm từ 4 xuống 2
+                  const SizedBox(height: 2),
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 12, // Giảm từ 14 xuống 12
+                      fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: Colors.black87,
                     ),
@@ -258,7 +224,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 10, // Giảm từ 12 xuống 10
+                      fontSize: 10,
                       color: Colors.grey[600],
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -272,7 +238,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildProgressChart() {
+  Widget _buildProgressChart(ProgressController controller) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -290,73 +256,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ),
             const SizedBox(height: 16),
             Container(
-              height: 180, // Giảm từ 200 để tiết kiệm không gian
+              height: 180,
               width: double.infinity,
-              child: BarChart(
-                BarChartData(
-                  alignment: BarChartAlignment.spaceAround,
-                  maxY: _weeklyProgress.map((e) => e.cardsLearned.toDouble()).reduce((a, b) => a > b ? a : b) + 5,
-                  barTouchData: BarTouchData(
-                    enabled: true,
-                    touchTooltipData: BarTouchTooltipData(
-                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        final day = _weeklyProgress[groupIndex];
-                        return BarTooltipItem(
-                          '${day.cardsLearned} thẻ\n${day.quizzesCompleted} quiz',
-                          const TextStyle(color: Colors.white),
-                        );
-                      },
-                    ),
-                  ),
-                  titlesData: FlTitlesData(
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          final date = _weeklyProgress[value.toInt()].date;
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              '${date.day}/${date.month}',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          return Text(
-                            value.toInt().toString(),
-                            style: const TextStyle(fontSize: 12),
-                          );
-                        },
-                      ),
-                    ),
-                    rightTitles: const AxisTitles(),
-                    topTitles: const AxisTitles(),
-                  ),
-                  gridData: const FlGridData(show: false),
-                  borderData: FlBorderData(show: false),
-                  barGroups: _weeklyProgress.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final day = entry.value;
-                    return BarChartGroupData(
-                      x: index,
-                      barRods: [
-                        BarChartRodData(
-                          toY: day.cardsLearned.toDouble(),
-                          color: Colors.blueAccent,
-                          width: 16,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ),
+              child: BarChart(controller.barChartData),
             ),
             const SizedBox(height: 8),
             const Row(
@@ -373,7 +275,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildRecentActivities() {
+  Widget _buildRecentActivities(ProgressController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -391,8 +293,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              children: _recentActivities
-                  .take(5) // Chỉ hiển thị tối đa 5 activity để tránh overflow
+              children: controller.recentActivities
+                  .take(5)
                   .map((activity) => _buildActivityItem(activity))
                   .toList(),
             ),
@@ -402,7 +304,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildActivityItem(Activity activity) {
+  Widget _buildActivityItem(api.Activity activity) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -451,7 +353,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildAchievements() {
+  Widget _buildAchievements(ProgressController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -464,12 +366,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 120,
+          height: 110, // Giảm xuống từ 120 để tránh overflow
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: _achievements.length,
+            itemCount: controller.achievements.length,
             itemBuilder: (context, index) {
-              return _buildAchievementCard(_achievements[index]);
+              return _buildAchievementCard(controller.achievements[index]);
             },
           ),
         ),
@@ -477,7 +379,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildAchievementCard(Achievement achievement) {
+  Widget _buildAchievementCard(api.Achievement achievement) {
     return Container(
       width: 140,
       margin: const EdgeInsets.only(right: 12),
@@ -485,7 +387,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         elevation: achievement.isUnlocked ? 4 : 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(10), // Giảm xuống từ 12
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             color: achievement.isUnlocked ? Colors.white : Colors.grey[100],
@@ -494,7 +396,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(6), // Giảm xuống từ 8
                 decoration: BoxDecoration(
                   color: achievement.isUnlocked
                       ? achievement.color.withOpacity(0.1)
@@ -503,7 +405,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 ),
                 child: Icon(
                   achievement.icon,
-                  size: 24,
+                  size: 20, // Giảm xuống từ 24
                   color: achievement.isUnlocked ? achievement.color : Colors.grey,
                 ),
               ),
@@ -514,7 +416,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     Text(
                       achievement.name,
                       style: TextStyle(
-                        fontSize: 11, // Giảm từ 12 xuống 11
+                        fontSize: 10, // Giảm xuống từ 11
                         fontWeight: FontWeight.bold,
                         color: achievement.isUnlocked ? Colors.black87 : Colors.grey,
                       ),
@@ -522,17 +424,17 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2), // Giảm xuống từ 4
                     if (achievement.isUnlocked) ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.star, size: 12, color: Colors.amber),
+                          const Icon(Icons.star, size: 10, color: Colors.amber), // Giảm size
                           const SizedBox(width: 2),
                           Text(
                             '+${achievement.points}',
                             style: const TextStyle(
-                              fontSize: 10,
+                              fontSize: 9, // Giảm xuống từ 10
                               color: Colors.amber,
                             ),
                           ),
@@ -542,7 +444,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       Text(
                         'Chưa mở khóa',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 9, // Giảm xuống từ 10
                           color: Colors.grey[500],
                         ),
                       ),

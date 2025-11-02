@@ -1,63 +1,42 @@
-// lib/flashcard/flashcard_deck_list_screen.dart
+// lib/screens/flashcard/flashcard_deck_list_screen.dart
 import 'package:flutter/material.dart';
-import '../../data/flashcard_api.dart';
-import '../../models/category.dart';
-import '../../models/deck.dart';
+import 'package:get/get.dart';
+import '../../../controllers/flashcard_deck_list_controller.dart';
+import '../../../models/category.dart';
+import '../../../models/deck.dart';
 import 'flashcard_study_screen.dart';
 
-class FlashcardDeckListScreen extends StatefulWidget {
+class FlashcardDeckListScreen extends StatelessWidget {
   final Category category;
 
   const FlashcardDeckListScreen({super.key, required this.category});
 
   @override
-  State<FlashcardDeckListScreen> createState() => _FlashcardDeckListScreenState();
-}
-
-class _FlashcardDeckListScreenState extends State<FlashcardDeckListScreen> {
-  List<Deck> _decks = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadDecks();
-  }
-
-  Future<void> _loadDecks() async {
-    try {
-      final decks = await FlashcardAPI.getDecksByCategory(widget.category.id);
-      setState(() {
-        _decks = decks;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('Error loading decks: $e');
-      setState(() => _isLoading = false);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.category.name),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _decks.isEmpty
-              ? const Center(child: Text('Chưa có deck nào'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _decks.length,
-                  itemBuilder: (context, index) {
-                    return _buildDeckCard(_decks[index]);
-                  },
-                ),
+    return GetBuilder<FlashcardDeckListController>(
+      init: FlashcardDeckListController(category),
+      builder: (controller) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(category.name),
+          ),
+          body: Obx(() => controller.isLoading.value
+              ? const Center(child: CircularProgressIndicator())
+              : controller.decks.isEmpty
+                  ? const Center(child: Text('Chưa có deck nào'))
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: controller.decks.length,
+                      itemBuilder: (context, index) {
+                        return _buildDeckCard(controller.decks[index], controller);
+                      },
+                    )),
+        );
+      },
     );
   }
 
-  Widget _buildDeckCard(Deck deck) {
+  Widget _buildDeckCard(Deck deck, FlashcardDeckListController controller) {
     return Card(
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 16),
@@ -105,7 +84,7 @@ class _FlashcardDeckListScreenState extends State<FlashcardDeckListScreen> {
                   // Progress and Stats
                   Row(
                     children: [
-                      _buildProgressIndicator(deck.progress),
+                      controller.buildProgressIndicator(deck.progress),
                       const SizedBox(width: 8),
                       Text(
                         '${deck.learnedCards}/${deck.totalCards}',
@@ -133,12 +112,7 @@ class _FlashcardDeckListScreenState extends State<FlashcardDeckListScreen> {
             // Start Button
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FlashcardStudyScreen(deck: deck),
-                  ),
-                );
+                Get.to(() => FlashcardStudyScreen(deck: deck));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueAccent,
@@ -151,21 +125,6 @@ class _FlashcardDeckListScreenState extends State<FlashcardDeckListScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildProgressIndicator(double progress) {
-    return Expanded(
-      flex: 2,
-      child: LinearProgressIndicator(
-        value: progress,
-        backgroundColor: Colors.grey[300],
-        valueColor: AlwaysStoppedAnimation<Color>(
-          progress > 0.7 ? Colors.green : Colors.blueAccent,
-        ),
-        minHeight: 6,
-        borderRadius: BorderRadius.circular(3),
       ),
     );
   }

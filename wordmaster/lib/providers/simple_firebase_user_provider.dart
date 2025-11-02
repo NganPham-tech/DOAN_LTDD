@@ -17,12 +17,12 @@ class SimpleFirebaseUserProvider with ChangeNotifier {
 
   // Initialize provider and listen to auth state changes
   SimpleFirebaseUserProvider() {
-    print('🚀 SimpleFirebaseUserProvider initialized');
+    print('SimpleFirebaseUserProvider initialized');
     _authService.authStateChanges.listen(_onAuthStateChanged);
   }
 
   void _onAuthStateChanged(User? firebaseUser) async {
-    print('🔄 Auth state changed: ${firebaseUser?.email}');
+    print('Auth state changed: ${firebaseUser?.email}');
     if (firebaseUser != null) {
       // User is signed in
       _currentUser = models.User(
@@ -50,7 +50,7 @@ class SimpleFirebaseUserProvider with ChangeNotifier {
     String? username,
     String? phone,
   }) async {
-    print('📝 Starting registration...');
+    print('Starting registration...');
     _setLoading(true);
     _error = null;
 
@@ -61,10 +61,10 @@ class SimpleFirebaseUserProvider with ChangeNotifier {
         fullName: fullName,
       );
 
-      print('✅ Registration successful');
+      print('Registration successful');
       return userCredential?.user != null;
     } catch (e) {
-      print('❌ Registration failed: $e');
+      print('Registration failed: $e');
       _error = e.toString();
       return false;
     } finally {
@@ -74,7 +74,7 @@ class SimpleFirebaseUserProvider with ChangeNotifier {
 
   // Login user
   Future<bool> login({required String email, required String password}) async {
-    print('🔑 Starting login...');
+    print('Starting login...');
     _setLoading(true);
     _error = null;
 
@@ -84,10 +84,10 @@ class SimpleFirebaseUserProvider with ChangeNotifier {
         password: password,
       );
 
-      print('✅ Login successful');
+      print('Login successful');
       return userCredential?.user != null;
     } catch (e) {
-      print('❌ Login failed: $e');
+      print('Login failed: $e');
       _error = e.toString();
       return false;
     } finally {

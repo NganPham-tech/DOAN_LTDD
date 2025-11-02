@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:get/get.dart';
 import 'l10n/app_localizations.dart';
 
 import 'firebase_options.dart';
@@ -11,31 +12,36 @@ import 'providers/simple_firebase_user_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/quiz_provider.dart';
 import 'providers/locale_provider.dart';
-import 'screens/home/home_screen.dart';
-import 'screens/flashcard/flashcard_overview_screen.dart';
-import 'screens/progress/progress_screen.dart';
-import 'screens/profile/profile_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
-import 'screens/quiz/quiz_topics_screen.dart';
+import 'screens/auth/auth_wrapper.dart';
 import 'services/tts_service.dart';
-
+import 'controllers/auth_controller.dart';
+import 'controllers/progress_controller.dart';
+import 'controllers/flashcard_overview_controller.dart';
+/// wordmaster/lib/main.dart
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables (with error handling)
   try {
     await dotenv.load(fileName: ".env");
   } catch (e) {
     print('Warning: Could not load .env file: $e');
   }
 
-  // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
-  // Initialize TTS Service globally
   await TtsService.initialize();
 
+  // Đăng ký providers trong GetX
+  Get.put(SimpleFirebaseUserProvider(), permanent: true);
+  Get.put(SettingsProvider(), permanent: true);
+  Get.put(QuizProvider(), permanent: true);
+  Get.put(LocaleProvider(), permanent: true);
+  
+  // Đăng ký AuthController
+  Get.put(AuthController(), permanent: true);
+  Get.put(ProgressController(), permanent: true);
+  Get.put(FlashcardOverviewController(), permanent: true);
   runApp(const MyApp());
 }
 
@@ -56,7 +62,7 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<LocaleProvider>(
         builder: (context, localeProvider, child) {
-          return MaterialApp(
+          return GetMaterialApp(
             title: 'WordMaster',
             debugShowCheckedModeBanner: false,
             
@@ -111,119 +117,13 @@ class MyApp extends StatelessWidget {
               ),
             ),
             
-            home: const MainNavigation(),
+            home: const AuthWrapper(),
             routes: {
               '/login': (context) => const LoginScreen(),
               '/register': (context) => const RegisterScreen(),
             },
           );
         },
-      ),
-    );
-  }
-}
-
-class MainNavigation extends StatefulWidget {
-  const MainNavigation({super.key});
-
-  @override
-  _MainNavigationState createState() => _MainNavigationState();
-}
-
-class _MainNavigationState extends State<MainNavigation> {
-  int _currentIndex = 0;
-
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const FlashcardOverviewScreen(),
-    const QuizTopicsScreen(),
-    const ProgressScreen(),
-    const ProfileScreen(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home), 
-            label: l10n?.home ?? 'Trang chủ'
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.flash_on),
-            label: l10n?.flashcards ?? 'Flashcard',
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.quiz), 
-            label: l10n?.quiz ?? 'Quiz'
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.timeline), 
-            label: l10n?.progress ?? 'Tiến độ'
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.person), 
-            label: l10n?.profile ?? 'Hồ sơ'
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Placeholder screens
-class FlashcardPlaceholderScreen extends StatelessWidget {
-  const FlashcardPlaceholderScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flashcard'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-      ),
-      body: const Center(
-        child: Text(
-          'Flashcard Screen\n(Đang phát triển)',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 18),
-        ),
-      ),
-    );
-  }
-}
-
-class ProgressPlaceholderScreen extends StatelessWidget {
-  const ProgressPlaceholderScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tiến độ'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-      ),
-      body: const Center(
-        child: Text(
-          'Progress Screen\n(Đang phát triển)',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 18),
-        ),
       ),
     );
   }

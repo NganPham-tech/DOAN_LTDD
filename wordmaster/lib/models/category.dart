@@ -1,3 +1,4 @@
+// wordmaster/lib/models/category.dart
 class Category {
   final int? categoryID;
   final String name;

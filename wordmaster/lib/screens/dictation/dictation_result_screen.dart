@@ -1,70 +1,69 @@
 // lib/screens/dictation/dictation_result_screen.dart
 import 'package:flutter/material.dart';
-import '../../models/dictation.dart';
-import '../../services/dictation_scoring_service.dart';
+import 'package:get/get.dart';
+import '../../../controllers/dictation_result_controller.dart';
+import '../../../models/dictation.dart';
 
-class DictationResultScreen extends StatefulWidget {
+class DictationResultScreen extends StatelessWidget {
   final DictationResult result;
 
   const DictationResultScreen({super.key, required this.result});
 
   @override
-  State<DictationResultScreen> createState() => _DictationResultScreenState();
-}
-
-class _DictationResultScreenState extends State<DictationResultScreen> {
-  bool _showComparison = true;
-  
-  @override
   Widget build(BuildContext context) {
-    final isPassed = DictationScoringService.isPassed(widget.result);
-    final errors = DictationScoringService.analyzeErrors(widget.result);
-    
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text('Kết quả'),
-        backgroundColor: const Color(0xFFd63384),
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Score Card
-            _buildScoreCard(isPassed),
-            const SizedBox(height: 24),
-            
-            // Statistics
-            _buildStatisticsCard(),
-            const SizedBox(height: 24),
-            
-            // Error Analysis
-            if (!isPassed) _buildErrorAnalysis(errors),
-            if (!isPassed) const SizedBox(height: 24),
-            
-            // Toggle Comparison
-            _buildComparisonToggle(),
-            const SizedBox(height: 16),
-            
-            // Text Comparison
-            if (_showComparison) _buildTextComparison(),
-            const SizedBox(height: 24),
-            
-            // Actions
-            _buildActionButtons(),
-          ],
-        ),
-      ),
+    return GetBuilder<DictationResultController>(
+      init: DictationResultController(result),
+      builder: (controller) {
+        final isPassed = controller.isPassed;
+        final errors = controller.errors;
+        
+        return Scaffold(
+          backgroundColor: Colors.grey[50],
+          appBar: AppBar(
+            title: const Text('Kết quả'),
+            backgroundColor: const Color(0xFFd63384),
+            foregroundColor: Colors.white,
+            leading: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Get.until((route) => route.isFirst),
+            ),
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Score Card
+                _buildScoreCard(isPassed, controller),
+                const SizedBox(height: 24),
+                
+                // Statistics
+                _buildStatisticsCard(controller),
+                const SizedBox(height: 24),
+                
+                // Error Analysis
+                if (!isPassed) _buildErrorAnalysis(errors, controller),
+                if (!isPassed) const SizedBox(height: 24),
+                
+                // Toggle Comparison
+                _buildComparisonToggle(controller),
+                const SizedBox(height: 16),
+                
+                // Text Comparison
+                if (controller.showComparison.value) _buildTextComparison(controller),
+                const SizedBox(height: 24),
+                
+                // Actions
+                _buildActionButtons(controller),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
   
-  Widget _buildScoreCard(bool isPassed) {
+  Widget _buildScoreCard(bool isPassed, DictationResultController controller) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -84,7 +83,7 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            widget.result.grade,
+            controller.result.grade,
             style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -93,7 +92,7 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '${widget.result.wordAccuracy.toStringAsFixed(1)}% chính xác',
+            '${controller.result.wordAccuracy.toStringAsFixed(1)}% chính xác',
             style: const TextStyle(
               fontSize: 18,
               color: Colors.white70,
@@ -104,11 +103,11 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildScoreStat(
-                '${widget.result.correctWords}/${widget.result.totalWords}',
+                '${controller.result.correctWords}/${controller.result.totalWords}',
                 'Từ đúng',
               ),
               _buildScoreStat(
-                '${widget.result.timeSpentSeconds}s',
+                '${controller.result.timeSpentSeconds}s',
                 'Thời gian',
               ),
             ],
@@ -141,7 +140,7 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
     );
   }
   
-  Widget _buildStatisticsCard() {
+  Widget _buildStatisticsCard(DictationResultController controller) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -157,25 +156,25 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
             const SizedBox(height: 16),
             _buildStatRow(
               'Số từ đúng',
-              '${widget.result.correctWords}',
+              '${controller.result.correctWords}',
               Colors.green,
               Icons.check_circle,
             ),
             _buildStatRow(
               'Số từ sai',
-              '${widget.result.totalWords - widget.result.correctWords}',
+              '${controller.result.totalWords - controller.result.correctWords}',
               Colors.red,
               Icons.cancel,
             ),
             _buildStatRow(
               'Độ chính xác từ',
-              '${widget.result.wordAccuracy.toStringAsFixed(1)}%',
+              '${controller.result.wordAccuracy.toStringAsFixed(1)}%',
               Colors.blue,
               Icons.text_fields,
             ),
             _buildStatRow(
               'Độ chính xác ký tự',
-              '${widget.result.charAccuracy.toStringAsFixed(1)}%',
+              '${controller.result.charAccuracy.toStringAsFixed(1)}%',
               Colors.purple,
               Icons.format_size,
             ),
@@ -218,7 +217,7 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
     );
   }
   
-  Widget _buildErrorAnalysis(Map<String, int> errors) {
+  Widget _buildErrorAnalysis(Map<String, int> errors, DictationResultController controller) {
     if (errors.values.every((count) => count == 0)) {
       return const SizedBox.shrink();
     }
@@ -287,7 +286,7 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
     );
   }
   
-  Widget _buildComparisonToggle() {
+  Widget _buildComparisonToggle(DictationResultController controller) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -300,18 +299,16 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
           'Xem chi tiết từng từ đúng/sai',
           style: TextStyle(fontSize: 12),
         ),
-        value: _showComparison,
+        value: controller.showComparison.value,
         activeColor: const Color(0xFFd63384),
         onChanged: (value) {
-          setState(() {
-            _showComparison = value;
-          });
+          controller.showComparison.value = value;
         },
       ),
     );
   }
   
-  Widget _buildTextComparison() {
+  Widget _buildTextComparison(DictationResultController controller) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -329,7 +326,7 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
             // Your Answer
             _buildTextSection(
               'Câu trả lời của bạn',
-              widget.result.userInput,
+              controller.result.userInput,
               Colors.orange,
             ),
             
@@ -338,7 +335,7 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
             // Correct Answer
             _buildTextSection(
               'Đáp án đúng',
-              widget.result.correctText,
+              controller.result.correctText,
               Colors.green,
             ),
             
@@ -350,7 +347,7 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            _buildWordComparison(),
+            _buildWordComparison(controller),
           ],
         ),
       ),
@@ -400,11 +397,11 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
     );
   }
   
-  Widget _buildWordComparison() {
+  Widget _buildWordComparison(DictationResultController controller) {
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children: widget.result.wordComparisons.map((comparison) {
+      children: controller.result.wordComparisons.map((comparison) {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
@@ -449,13 +446,13 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
     );
   }
   
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(DictationResultController controller) {
     return Column(
       children: [
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => controller.retryLesson(),
             icon: const Icon(Icons.replay),
             label: const Text('Làm lại'),
             style: ElevatedButton.styleFrom(
@@ -471,7 +468,7 @@ class _DictationResultScreenState extends State<DictationResultScreen> {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+            onPressed: () => controller.goHome(),
             icon: const Icon(Icons.home),
             label: const Text('Về trang chủ'),
             style: OutlinedButton.styleFrom(

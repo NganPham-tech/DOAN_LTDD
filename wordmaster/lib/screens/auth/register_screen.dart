@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'login_screen.dart';
-import '../../providers/simple_firebase_user_provider.dart';
-import 'package:provider/provider.dart';
+import '../../controllers/auth_controller.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -81,11 +81,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      final userProvider = Provider.of<SimpleFirebaseUserProvider>(
-        context,
-        listen: false,
-      );
-      final success = await userProvider.register(
+      final authController = Get.find<AuthController>();
+      final success = await authController.register(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         fullName:
@@ -101,7 +98,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       } else if (mounted) {
         _showErrorMessage(
-          userProvider.error ??
+          authController.error.value ??
               'Đăng ký thất bại. Email có thể đã được sử dụng.',
         );
       }

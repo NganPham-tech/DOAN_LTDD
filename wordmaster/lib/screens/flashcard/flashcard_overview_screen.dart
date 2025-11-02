@@ -1,74 +1,48 @@
+// lib/screens/flashcard/flashcard_overview_screen.dart
 import 'package:flutter/material.dart';
-import '../../data/flashcard_api.dart';
-import '../../models/category.dart';
+import 'package:get/get.dart';
+import '../../../controllers/flashcard_overview_controller.dart';
+import '../../../models/category.dart';
 import 'flashcard_deck_list_screen.dart';
-//D:\DEMOLTDD\wordmaster\lib\screens\flashcard\flashcard_overview_screen.dart
-class FlashcardOverviewScreen extends StatefulWidget {
+
+class FlashcardOverviewScreen extends StatelessWidget {
   const FlashcardOverviewScreen({super.key});
 
   @override
-  State<FlashcardOverviewScreen> createState() => _FlashcardOverviewScreenState();
-}
-
-class _FlashcardOverviewScreenState extends State<FlashcardOverviewScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  List<Category> _vocabCategories = [];
-  List<Category> _grammarCategories = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _loadCategories();
-  }
-
-  Future<void> _loadCategories() async {
-    try {
-      final vocabCats = await FlashcardAPI.getCategories(type: 'vocabulary');
-      final grammarCats = await FlashcardAPI.getCategories(type: 'grammar');
-      
-      setState(() {
-        _vocabCategories = vocabCats;
-        _grammarCategories = grammarCats;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('Error loading categories: $e');
-      setState(() => _isLoading = false);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flashcard'),
-        backgroundColor: const Color(0xFFd63384),
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-          tabs: const [
-            Tab(text: 'Từ vựng'),
-            Tab(text: 'Ngữ pháp'),
-          ],
-        ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildCategoryGrid(_vocabCategories),
-                _buildCategoryGrid(_grammarCategories),
+    return GetBuilder<FlashcardOverviewController>(
+      init: FlashcardOverviewController(),
+      builder: (controller) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Flashcard'),
+            backgroundColor: const Color(0xFFd63384),
+            foregroundColor: Colors.white,
+            bottom: TabBar(
+              controller: controller.tabController,
+              indicatorColor: Colors.white,
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              tabs: const [
+                Tab(text: 'Từ vựng'),
+                Tab(text: 'Ngữ pháp'),
               ],
             ),
+          ),
+          body: Obx(() => controller.isLoading.value
+              ? const Center(child: CircularProgressIndicator())
+              : TabBarView(
+                  controller: controller.tabController,
+                  children: [
+                    _buildCategoryGrid(controller.vocabCategories, controller),
+                    _buildCategoryGrid(controller.grammarCategories, controller),
+                  ],
+                )),
+        );
+      },
     );
   }
 
-  Widget _buildCategoryGrid(List<Category> categories) {
+  Widget _buildCategoryGrid(RxList<Category> categories, FlashcardOverviewController controller) {
     if (categories.isEmpty) {
       return const Center(
         child: Text(
@@ -91,30 +65,25 @@ class _FlashcardOverviewScreenState extends State<FlashcardOverviewScreen> with 
         ),
         itemCount: categories.length,
         itemBuilder: (context, index) {
-          return _buildCategoryCard(categories[index]);
+          return _buildCategoryCard(categories[index], controller);
         },
       ),
     );
   }
 
-  Widget _buildCategoryCard(Category category) {
+  Widget _buildCategoryCard(Category category, FlashcardOverviewController controller) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FlashcardDeckListScreen(category: category),
-            ),
-          );
+          Get.to(() => FlashcardDeckListScreen(category: category));
         },
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: _parseColor(category.colorCode).withOpacity(0.1),
+            color: controller.parseColor(category.colorCode).withOpacity(0.1),
           ),
           child: Stack(
             children: [
@@ -124,14 +93,14 @@ class _FlashcardOverviewScreenState extends State<FlashcardOverviewScreen> with 
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _parseColor(category.colorCode).withOpacity(0.2),
+                    color: controller.parseColor(category.colorCode).withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     '${category.deckCount} deck',
                     style: TextStyle(
                       fontSize: 12,
-                      color: _parseColor(category.colorCode),
+                      color: controller.parseColor(category.colorCode),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -146,7 +115,7 @@ class _FlashcardOverviewScreenState extends State<FlashcardOverviewScreen> with 
                     Icon(
                       Icons.book,  // Default icon
                       size: 32,
-                      color: _parseColor(category.colorCode),
+                      color: controller.parseColor(category.colorCode),
                     ),
                     const SizedBox(height: 12),
                     Text(
@@ -176,19 +145,5 @@ class _FlashcardOverviewScreenState extends State<FlashcardOverviewScreen> with 
         ),
       ),
     );
-  }
-
-  Color _parseColor(String colorCode) {
-    try {
-      return Color(int.parse(colorCode.substring(1, 7), radix: 16) + 0xFF000000);
-    } catch (e) {
-      return Colors.blue;
-    }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 }

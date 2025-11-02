@@ -4,18 +4,29 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 class ProgressAPI {
-  static const String baseUrl = 'http://10.0.2.2:8080'; // Thay URL của bạn
+  static const String baseUrl = 'http://10.0.2.2:8080';
 
   // Lấy tất cả dữ liệu cho trang Progress
   static Future<Map<String, dynamic>> getAllProgressData(int userId) async {
     try {
+      final url = '$baseUrl/progress/user?userId=$userId';
+      print('Calling API: $url');
+      
       final response = await http.get(
-        Uri.parse('$baseUrl/progress/user?userId=$userId'),
+        Uri.parse(url),
       );
+
+      print('API Response Status: ${response.statusCode}');
+      print('API Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['data'] as Map<String, dynamic>;
+        print('Parsed JSON data: $data');
+        
+        final result = data['data'] as Map<String, dynamic>;
+        print('Returning data: $result');
+        
+        return result;
       } else {
         throw Exception('Failed to fetch progress: ${response.statusCode}');
       }

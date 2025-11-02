@@ -1,242 +1,80 @@
+// lib/screens/dictation/dictation_play_screen.dart
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../controllers/dictation_play_controller.dart';
 import '../../models/dictation.dart';
-import '../../services/tts_service.dart';
-import '../../services/dictation_scoring_service.dart';
 import 'dictation_result_screen.dart';
-
-class DictationPlayScreen extends StatefulWidget {
+import '../../services/tts_service.dart';
+class DictationPlayScreen extends StatelessWidget {
   final DictationLesson lesson;
 
   const DictationPlayScreen({super.key, required this.lesson});
 
   @override
-  State<DictationPlayScreen> createState() => _DictationPlayScreenState();
-}
-
-class _DictationPlayScreenState extends State<DictationPlayScreen> {
-  final TextEditingController _textController = TextEditingController();
-  bool _isPlaying = false;
-  bool _showTranscript = false;
-  int _playCount = 0;
-  int _currentSegmentIndex = 0;
-  bool _isSegmentMode = false;
-  DateTime? _startTime;
-  
-  // TTS settings
-  double _speechRate = 0.5;  // Tốc độ đọc (0.0 - 1.0)
-  
-  @override
-  void initState() {
-    super.initState();
-    _initializeTTS();
-    _startTime = DateTime.now();
-  }
-  
-  Future<void> _initializeTTS() async {
-    // TTS đã được khởi tạo trong main.dart, chỉ cần cấu hình
-    await TtsService.setLanguage('en-US');
-    await TtsService.setSpeechRate(_speechRate);
-  }
-  
-  Future<void> _playFullAudio() async {
-    if (_isPlaying) return;
+  Widget build(BuildContext context) {
+    final controller = Get.put(DictationPlayController(lesson));
     
-    setState(() {
-      _isPlaying = true;
-      _playCount++;
-    });
-    
-    // Force apply speech rate trước khi phát
-    await TtsService.setSpeechRate(_speechRate);
-    print('Playing at speed: $_speechRate'); // Debug log
-    
-    // Delay nhỏ để đảm bảo setting được apply
-    await Future.delayed(const Duration(milliseconds: 100));
-    
-    // Sử dụng TTS để đọc transcript
-    await TtsService.speak(widget.lesson.fullTranscript);
-    
-    setState(() {
-      _isPlaying = false;
-    });
-  }
-  
-  Future<void> _playSegment(int index) async {
-    if (_isPlaying || index >= widget.lesson.segments.length) return;
-    
-    setState(() {
-      _isPlaying = true;
-      _currentSegmentIndex = index;
-    });
-    
-    // Force apply speech rate trước khi phát segment
-    await TtsService.setSpeechRate(_speechRate);
-    print('Playing segment at speed: $_speechRate'); // Debug log
-    
-    // Delay nhỏ để đảm bảo setting được apply
-    await Future.delayed(const Duration(milliseconds: 100));
-    
-    final segment = widget.lesson.segments[index];
-    await TtsService.speak(segment.text);
-    
-    setState(() {
-      _isPlaying = false;
-    });
-  }
-  
-  // Widget để điều chỉnh tốc độ đọc
-  Widget _buildSpeedControl() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Tốc độ đọc',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+    return Obx(() {
+      return Scaffold(
+        backgroundColor: Colors.grey[50],
+        appBar: AppBar(
+          title: Text(lesson.title),
+          backgroundColor: const Color(0xFFd63384),
+          foregroundColor: Colors.white,
+          actions: [
+            IconButton(
+              icon: Icon(controller.showTranscript.value ? Icons.visibility_off : Icons.visibility),
+              onPressed: () {
+                controller.showTranscript.toggle();
+              },
+              tooltip: controller.showTranscript.value ? 'Ẩn script' : 'Xem script',
             ),
-            const SizedBox(height: 8),
-            Row(
+          ],
+        ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.speed, size: 20, color: Color(0xFFd63384)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Slider(
-                    value: _speechRate,
-                    min: 0.3,
-                    max: 1.0,
-                    divisions: 7,
-                    label: _getSpeedLabel(_speechRate),
-                    activeColor: const Color(0xFFd63384),
-                    onChanged: (value) async {
-                      setState(() {
-                        _speechRate = value;
-                      });
-                      await TtsService.setSpeechRate(value);
-                    },
-                  ),
-                ),
-                Text(
-                  _getSpeedLabel(_speechRate),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                // Info Card
+                _buildInfoCard(controller),
+                const SizedBox(height: 16),
+                
+                // Speed Control
+                _buildSpeedControl(controller),
+                const SizedBox(height: 16),
+                
+                // Play Mode Toggle
+                _buildPlayModeToggle(controller),
+                const SizedBox(height: 16),
+                
+                // Audio Controls
+                Builder(builder: (context) {
+                  print('🎛️ Building audio controls: isSegmentMode=${controller.isSegmentMode.value}');
+                  return !controller.isSegmentMode.value 
+                    ? _buildFullAudioControls(controller) 
+                    : _buildSegmentControls(controller);
+                }),
+                const SizedBox(height: 24),
+                
+                // Transcript (if shown)
+                if (controller.showTranscript.value) _buildTranscriptCard(controller),
+                const SizedBox(height: 24),
+                
+                // Input Area
+                _buildInputArea(controller),
+                const SizedBox(height: 24),
+                
+                // Submit Button
+                _buildSubmitButton(controller),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  String _getSpeedLabel(double rate) {
-    if (rate <= 0.4) return 'Rất chậm';
-    if (rate <= 0.5) return 'Chậm';
-    if (rate <= 0.6) return 'Bình thường';
-    if (rate <= 0.8) return 'Nhanh';
-    return 'Rất nhanh';
-  }
-  
-  void _submitAnswer() {
-    final userInput = _textController.text.trim();
-    
-    if (userInput.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng nhập câu trả lời trước khi nộp bài'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-    
-    // Tính điểm sử dụng DictationScoringService
-    final result = DictationScoringService.scoreText(
-      lessonId: widget.lesson.id,
-      userInput: userInput,
-      correctText: widget.lesson.fullTranscript,
-      timeSpentSeconds: _startTime != null 
-          ? DateTime.now().difference(_startTime!).inSeconds 
-          : 0,
-    );
-    
-    // Chuyển đến màn hình kết quả
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DictationResultScreen(
-          result: result,
-        ),
-      ),
-    );
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text(widget.lesson.title),
-        backgroundColor: const Color(0xFFd63384),
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: Icon(_showTranscript ? Icons.visibility_off : Icons.visibility),
-            onPressed: () {
-              setState(() {
-                _showTranscript = !_showTranscript;
-              });
-            },
-            tooltip: _showTranscript ? 'Ẩn script' : 'Xem script',
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Info Card
-            _buildInfoCard(),
-            const SizedBox(height: 16),
-            
-            // Speed Control
-            _buildSpeedControl(),
-            const SizedBox(height: 16),
-            
-            // Play Mode Toggle
-            _buildPlayModeToggle(),
-            const SizedBox(height: 16),
-            
-            // Audio Controls
-            if (!_isSegmentMode) 
-              _buildFullAudioControls() 
-            else 
-              _buildSegmentControls(),
-            const SizedBox(height: 24),
-            
-            // Transcript (if shown)
-            if (_showTranscript) _buildTranscriptCard(),
-            const SizedBox(height: 24),
-            
-            // Input Area
-            _buildInputArea(),
-            const SizedBox(height: 24),
-            
-            // Submit Button
-            _buildSubmitButton(),
-          ],
-        ),
-      ),
-    );
+        );
+    });
   }
   
-  Widget _buildInfoCard() {
+  Widget _buildInfoCard(DictationPlayController controller) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -257,7 +95,7 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  widget.lesson.levelText,
+                  lesson.levelText,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -269,14 +107,14 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
               const Icon(Icons.access_time, color: Colors.white70, size: 16),
               const SizedBox(width: 4),
               Text(
-                '${widget.lesson.durationSeconds}s',
+                '${lesson.durationSeconds}s',
                 style: const TextStyle(color: Colors.white70, fontSize: 12),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
-            widget.lesson.description,
+            lesson.description,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
@@ -285,11 +123,11 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
           const SizedBox(height: 12),
           Row(
             children: [
-              _buildStatChip(Icons.text_fields, '${widget.lesson.totalWords} từ'),
+              _buildStatChip(Icons.text_fields, '${lesson.totalWords} từ'),
               const SizedBox(width: 8),
-              _buildStatChip(Icons.format_list_numbered, '${widget.lesson.segments.length} câu'),
+              _buildStatChip(Icons.format_list_numbered, '${lesson.segments.length} câu'),
               const SizedBox(width: 8),
-              _buildStatChip(Icons.replay, '$_playCount lần nghe'),
+              _buildStatChip(Icons.replay, '${controller.playCount.value} lần nghe'),
             ],
           ),
         ],
@@ -321,7 +159,54 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
     );
   }
   
-  Widget _buildPlayModeToggle() {
+  Widget _buildSpeedControl(DictationPlayController controller) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Tốc độ đọc',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.speed, size: 20, color: Color(0xFFd63384)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Slider(
+                    value: controller.speechRate.value,
+                    min: 0.3,
+                    max: 1.0,
+                    divisions: 7,
+                    label: controller.getSpeedLabel(controller.speechRate.value),
+                    activeColor: const Color(0xFFd63384),
+                    onChanged: (value) async {
+                      controller.speechRate.value = value;
+                      await TtsService.setSpeechRate(value);
+                    },
+                  ),
+                ),
+                Text(
+                  controller.getSpeedLabel(controller.speechRate.value),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildPlayModeToggle(DictationPlayController controller) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -340,16 +225,22 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
             child: _buildModeButton(
               label: 'Toàn bộ',
               icon: Icons.play_circle_outline,
-              isSelected: !_isSegmentMode,
-              onTap: () => setState(() => _isSegmentMode = false),
+              isSelected: !controller.isSegmentMode.value,
+              onTap: () {
+                print('🔄 Setting segment mode to false');
+                controller.isSegmentMode.value = false;
+              },
             ),
           ),
           Expanded(
             child: _buildModeButton(
               label: 'Từng câu',
               icon: Icons.skip_next,
-              isSelected: _isSegmentMode,
-              onTap: () => setState(() => _isSegmentMode = true),
+              isSelected: controller.isSegmentMode.value,
+              onTap: () {
+                print('🔄 Setting segment mode to true');
+                controller.isSegmentMode.value = true;
+              },
             ),
           ),
         ],
@@ -394,7 +285,7 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
     );
   }
   
-  Widget _buildFullAudioControls() {
+  Widget _buildFullAudioControls(DictationPlayController controller) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -408,9 +299,9 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: _isPlaying ? null : _playFullAudio,
-              icon: Icon(_isPlaying ? Icons.volume_up : Icons.play_arrow),
-              label: Text(_isPlaying ? 'Đang phát...' : 'Phát toàn bộ'),
+              onPressed: controller.isPlaying.value ? null : () => controller.playFullAudio(),
+              icon: Icon(controller.isPlaying.value ? Icons.volume_up : Icons.play_arrow),
+              label: Text(controller.isPlaying.value ? 'Đang phát...' : 'Phát toàn bộ'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFd63384),
                 foregroundColor: Colors.white,
@@ -425,7 +316,7 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
     );
   }
   
-  Widget _buildSegmentControls() {
+  Widget _buildSegmentControls(DictationPlayController controller) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -439,15 +330,15 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            ...widget.lesson.segments.asMap().entries.map((entry) {
+            ...lesson.segments.asMap().entries.map((entry) {
               final index = entry.key;
               final segment = entry.value;
-              final isPlaying = _isPlaying && _currentSegmentIndex == index;
+              final isPlaying = controller.isPlaying.value && controller.currentSegmentIndex.value == index;
               
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ElevatedButton(
-                  onPressed: _isPlaying ? null : () => _playSegment(index),
+                  onPressed: controller.isPlaying.value ? null : () => controller.playSegment(index),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isPlaying ? Colors.orange : Colors.white,
                     foregroundColor: isPlaying ? Colors.white : Colors.black87,
@@ -489,7 +380,7 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
     );
   }
   
-  Widget _buildTranscriptCard() {
+  Widget _buildTranscriptCard(DictationPlayController controller) {
     return Card(
       elevation: 2,
       color: Colors.yellow[50],
@@ -511,9 +402,7 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
                 IconButton(
                   icon: const Icon(Icons.close, size: 20),
                   onPressed: () {
-                    setState(() {
-                      _showTranscript = false;
-                    });
+                    controller.showTranscript.value = false;
                   },
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -522,7 +411,7 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              widget.lesson.fullTranscript,
+              lesson.fullTranscript,
               style: const TextStyle(fontSize: 14, height: 1.5),
             ),
           ],
@@ -531,7 +420,7 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
     );
   }
   
-  Widget _buildInputArea() {
+  Widget _buildInputArea(DictationPlayController controller) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -546,7 +435,7 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
             ),
             const SizedBox(height: 12),
             TextField(
-              controller: _textController,
+              controller: controller.textController,
               maxLines: 8,
               decoration: InputDecoration(
                 hintText: 'Gõ văn bản ở đây...',
@@ -561,7 +450,7 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              '${_textController.text.split(' ').where((w) => w.isNotEmpty).length} từ',
+              '${controller.textController.text.split(' ').where((w) => w.isNotEmpty).length} từ',
               style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
           ],
@@ -570,11 +459,11 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
     );
   }
   
-  Widget _buildSubmitButton() {
+  Widget _buildSubmitButton(DictationPlayController controller) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: _submitAnswer,
+        onPressed: () => controller.submitAnswer(),
         icon: const Icon(Icons.check_circle),
         label: const Text('Nộp bài'),
         style: ElevatedButton.styleFrom(
@@ -586,12 +475,5 @@ class _DictationPlayScreenState extends State<DictationPlayScreen> {
         ),
       ),
     );
-  }
-  
-  @override
-  void dispose() {
-    _textController.dispose();
-    TtsService.stop();
-    super.dispose();
   }
 }

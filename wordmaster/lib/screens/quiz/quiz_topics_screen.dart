@@ -1,27 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/quiz_provider.dart';
-import '../../models/quiz_topic.dart';
+import 'package:get/get.dart';
+import '../../../controllers/quiz_controller.dart';
+import '../../../models/quiz_topic.dart';
 import 'quiz_screen.dart';
 
-class QuizTopicsScreen extends StatefulWidget {
+class QuizTopicsScreen extends StatelessWidget {
   const QuizTopicsScreen({super.key});
 
   @override
-  State<QuizTopicsScreen> createState() => _QuizTopicsScreenState();
-}
-
-class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<QuizProvider>(context, listen: false).loadQuizTopics();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final controller = Get.put(QuizController());
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -32,119 +21,135 @@ class _QuizTopicsScreenState extends State<QuizTopicsScreen> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: Consumer<QuizProvider>(
-        builder: (context, quizProvider, child) {
-          if (quizProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Obx(() => _buildBody(controller)),
+    );
+  }
 
-          if (quizProvider.error != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Oops! Something went wrong',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    quizProvider.error!,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () => quizProvider.loadQuizTopics(),
-                    child: const Text('Try Again'),
-                  ),
-                ],
+  Widget _buildBody(QuizController controller) {
+    print('Quiz _buildBody called');
+    print('isLoading: ${controller.isLoading.value}');
+    print('error: ${controller.error.value}');
+    print('topics length: ${controller.topics.length}');
+    
+    if (controller.isLoading.value) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (controller.error.value != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Oops! Something went wrong',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
               ),
-            );
-          }
-
-          if (quizProvider.topics.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.quiz_outlined, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No quiz topics available',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Check back later for new quizzes!',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Choose a topic to start your quiz',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: quizProvider.topics.length,
-                    itemBuilder: (context, index) {
-                      final topic = quizProvider.topics[index];
-                      return QuizTopicCard(
-                        topic: topic,
-                        onTap: () => _startQuiz(context, topic),
-                      );
-                    },
-                  ),
-                ),
-              ],
             ),
-          );
-        },
+            const SizedBox(height: 8),
+            Text(
+              controller.error.value!,
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => controller.loadQuizTopics(),
+              child: const Text('Try Again'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (controller.topics.isEmpty) {
+      // Force load if topics is empty and not loading
+      if (!controller.isLoading.value) {
+        print('Topics empty, calling loadQuizTopics()');
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          controller.loadQuizTopics();
+        });
+      }
+      
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.quiz_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'No quiz topics available',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Check back later for new quizzes!',
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Choose a topic to start your quiz',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: controller.topics.length,
+              itemBuilder: (context, index) {
+                final topic = controller.topics[index];
+                return QuizTopicCard(
+                  topic: topic,
+                  controller: controller,
+                  onTap: () => _startQuiz(topic),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  void _startQuiz(BuildContext context, QuizTopic topic) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => QuizScreen(topic: topic)));
+  void _startQuiz(QuizTopic topic) {
+    Get.to(() => QuizScreen(topic: topic));
   }
 }
 
 class QuizTopicCard extends StatelessWidget {
   final QuizTopic topic;
+  final QuizController controller;
   final VoidCallback onTap;
 
-  const QuizTopicCard({super.key, required this.topic, required this.onTap});
+  const QuizTopicCard({
+    super.key,
+    required this.topic,
+    required this.controller,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final quizProvider = Provider.of<QuizProvider>(context);
-
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 4,
@@ -195,20 +200,16 @@ class QuizTopicCard extends StatelessWidget {
                         Row(
                           children: [
                             Icon(
-                              quizProvider.getDifficultyIcon(topic.difficulty),
+                              controller.getDifficultyIcon(topic.difficulty),
                               size: 16,
-                              color: quizProvider.getDifficultyColor(
-                                topic.difficulty,
-                              ),
+                              color: controller.getDifficultyColor(topic.difficulty),
                             ),
                             const SizedBox(width: 4),
                             Text(
                               topic.difficulty,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: quizProvider.getDifficultyColor(
-                                  topic.difficulty,
-                                ),
+                                color: controller.getDifficultyColor(topic.difficulty),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),

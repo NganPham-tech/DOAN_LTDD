@@ -661,6 +661,72 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Sắp xếp'**
   String get sort;
+
+  /// No description provided for @study_reminder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch học'**
+  String get study_reminder;
+
+  /// No description provided for @study_reminder_title.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch nhắc nhở của bạn'**
+  String get study_reminder_title;
+
+  /// No description provided for @add_reminder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm lịch nhắc nhở mới'**
+  String get add_reminder;
+
+  /// No description provided for @reminder_title.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiêu đề'**
+  String get reminder_title;
+
+  /// No description provided for @reminder_description.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả'**
+  String get reminder_description;
+
+  /// No description provided for @select_time.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn thời gian'**
+  String get select_time;
+
+  /// No description provided for @time.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian: {time}'**
+  String time(String time);
+
+  /// No description provided for @repeat_daily.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lặp lại hàng ngày'**
+  String get repeat_daily;
+
+  /// No description provided for @add_reminder_button.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm nhắc nhở'**
+  String get add_reminder_button;
+
+  /// No description provided for @reminder_added.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thêm lịch nhắc nhở thành công'**
+  String get reminder_added;
+
+  /// No description provided for @please_enter_title.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập tiêu đề'**
+  String get please_enter_title;
 }
 
 class _AppLocalizationsDelegate

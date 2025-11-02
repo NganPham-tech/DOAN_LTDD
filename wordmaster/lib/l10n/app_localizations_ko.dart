@@ -297,4 +297,39 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get sort => '정렬';
+
+  @override
+  String get study_reminder => 'Lịch học';
+
+  @override
+  String get study_reminder_title => 'Lịch nhắc nhở của bạn';
+
+  @override
+  String get add_reminder => 'Thêm lịch nhắc nhở mới';
+
+  @override
+  String get reminder_title => 'Tiêu đề';
+
+  @override
+  String get reminder_description => 'Mô tả';
+
+  @override
+  String get select_time => 'Chọn thời gian';
+
+  @override
+  String time(String time) {
+    return 'Thời gian: $time';
+  }
+
+  @override
+  String get repeat_daily => 'Lặp lại hàng ngày';
+
+  @override
+  String get add_reminder_button => 'Thêm nhắc nhở';
+
+  @override
+  String get reminder_added => 'Đã thêm lịch nhắc nhở thành công';
+
+  @override
+  String get please_enter_title => 'Vui lòng nhập tiêu đề';
 }

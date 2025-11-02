@@ -40,7 +40,7 @@ class HomeController extends GetxController {
 
       final firebaseUid = authController.firebaseUid;
       
-      // Sử dụng ApiService với userId=2 cho dữ liệu người dùng
+    
       final data = await ApiService.get('/users/home?firebaseUid=$firebaseUid');
       
       print('Home API response: Success');
@@ -91,9 +91,9 @@ class HomeController extends GetxController {
     }
   }
 
-  // Cập nhật badge từ statistics (Grammar là index 3 bây giờ)
+
   void updateQuickActionsBadge() {
-    // Cập nhật badge cho Grammar (index 3)
+   
     if (quickActions.length > 3) {
       quickActions[3]['badge'] = statistics['grammarExercises'] ?? 2;
     }

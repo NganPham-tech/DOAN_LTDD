@@ -18,14 +18,14 @@ class _DictationListScreenState extends State<DictationListScreen> {
   @override
   void initState() {
     super.initState();
-    print('🏗️ DictationListScreen: initState called');
+    print('DictationListScreen: initState called');
     controller = Get.put(DictationListController());
-    print('🎯 DictationListScreen: Controller created in initState');
+    print('DictationListScreen: Controller created in initState');
   }
 
   @override
   Widget build(BuildContext context) {
-    print('🏗️ DictationListScreen: Building screen...');
+    print('DictationListScreen: Building screen...');
     
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -68,18 +68,18 @@ class _DictationListScreenState extends State<DictationListScreen> {
   
   Widget _buildLessonList(DictationListController controller, int tabIndex) {
     return Obx(() {
-      print('🔍 _buildLessonList: isLoading=${controller.isLoading.value}, tabIndex=$tabIndex');
+      print('_buildLessonList: isLoading=${controller.isLoading.value}, tabIndex=$tabIndex');
       
       if (controller.isLoading.value) {
-        print('⏳ Showing loading indicator');
+        print('Showing loading indicator');
         return const Center(child: CircularProgressIndicator());
       }
       
       final lessons = controller.getLessonsByTab(tabIndex);
-      print('📚 Tab $tabIndex has ${lessons.length} lessons');
+      print('Tab $tabIndex has ${lessons.length} lessons');
       
       if (lessons.isEmpty) {
-        print('📭 No lessons found for tab $tabIndex');
+        print('No lessons found for tab $tabIndex');
         return const Center(
           child: Text(
             'Chưa có bài học nào',
@@ -88,12 +88,12 @@ class _DictationListScreenState extends State<DictationListScreen> {
         );
       }
       
-      print('✅ Building ListView with ${lessons.length} lessons');
+      print('Building ListView with ${lessons.length} lessons');
       return ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: lessons.length,
         itemBuilder: (context, index) {
-          print('🎯 Building lesson card ${index}: ${lessons[index].title}');
+          print('Building lesson card ${index}: ${lessons[index].title}');
           return _buildLessonCard(lessons[index], controller);
         },
       );
@@ -274,7 +274,7 @@ class _DictationListScreenState extends State<DictationListScreen> {
 
   @override
   void dispose() {
-    print('🗑️ DictationListScreen: dispose called');
+    print('DictationListScreen: dispose called');
     super.dispose();
   }
 }

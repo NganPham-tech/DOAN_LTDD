@@ -23,7 +23,7 @@ class FlashcardStudyController extends GetxController
   @override
   void onInit() {
     super.onInit();
-    print('🚀 FlashcardStudyController: onInit called');
+    print('FlashcardStudyController: onInit called');
     
     flipController = AnimationController(
       vsync: this,
@@ -38,11 +38,11 @@ class FlashcardStudyController extends GetxController
 
   Future<void> _initializeTTS() async {
     try {
-      print('🔊 FlashcardStudyController: Initializing TTS...');
+      print('FlashcardStudyController: Initializing TTS...');
       await TtsService.initialize();
-      print('✅ FlashcardStudyController: TTS initialized successfully');
+      print('FlashcardStudyController: TTS initialized successfully');
     } catch (e) {
-      print('❌ FlashcardStudyController: TTS initialization failed: $e');
+      print('FlashcardStudyController: TTS initialization failed: $e');
     }
   }
 
@@ -139,18 +139,18 @@ class FlashcardStudyController extends GetxController
   }
 
   void speakText() {
-    print('🔊 FlashcardStudyController: speakText() called');
-    print('📝 hasCards: ${hasCards}');
-    print('🔤 isVocabulary: ${isVocabulary}');
+    print('FlashcardStudyController: speakText() called');
+    print('hasCards: ${hasCards}');
+    print('isVocabulary: ${isVocabulary}');
     
     if (!hasCards) {
-      print('❌ No cards available');
+      print('No cards available');
       return;
     }
     
     final word = flashcards[currentIndex.value].question;
-    print('🎯 Speaking word: "$word"');
-    print('🔧 TTS initialized: ${TtsService.isInitialized}');
+    print('Speaking word: "$word"');
+    print('TTS initialized: ${TtsService.isInitialized}');
     
     // Speak regardless of vocabulary type for testing
     TtsService.speak(word);

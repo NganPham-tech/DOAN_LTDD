@@ -22,20 +22,20 @@ class DictationPlayController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    print('🚀 DictationPlayController: onInit called');
+    print('DictationPlayController: onInit called');
     _initializeTTS();
     startTime = DateTime.now();
   }
 
   Future<void> _initializeTTS() async {
     try {
-      print('🔊 DictationPlayController: Initializing TTS...');
+      print('DictationPlayController: Initializing TTS...');
       await TtsService.initialize();
       await TtsService.setLanguage('en-US');
       await TtsService.setSpeechRate(speechRate.value);
-      print('✅ DictationPlayController: TTS initialized successfully');
+      print('DictationPlayController: TTS initialized successfully');
     } catch (e) {
-      print('❌ DictationPlayController: TTS initialization failed: $e');
+      print('DictationPlayController: TTS initialization failed: $e');
     }
   }
 
@@ -46,14 +46,14 @@ class DictationPlayController extends GetxController {
   Future<void> playFullAudio() async {
     if (isPlaying.value) return;
     
-    print('🔊 DictationPlayController: playFullAudio called');
+    print('DictationPlayController: playFullAudio called');
     isPlaying(true);
     playCount.value++;
     
     try {
       // Force apply speech rate trước khi phát
       await TtsService.setSpeechRate(speechRate.value);
-      print('🎯 Speaking text: "${lesson.fullTranscript}"');
+      print('Speaking text: "${lesson.fullTranscript}"');
       
       // Delay nhỏ để đảm bảo setting được apply
       await Future.delayed(const Duration(milliseconds: 100));
@@ -62,18 +62,18 @@ class DictationPlayController extends GetxController {
       await TtsService.speak(lesson.fullTranscript);
       
     } catch (e) {
-      print('❌ DictationPlayController: playFullAudio error: $e');
+      print('DictationPlayController: playFullAudio error: $e');
     } finally {
       isPlaying(false);
     }
   }
 
   Future<void> playSegment(int index) async {
-    print('🔊 DictationPlayController: playSegment($index) called');
-    print('📊 isPlaying: ${isPlaying.value}, segments length: ${lesson.segments.length}');
+    print('DictationPlayController: playSegment($index) called');
+    print('isPlaying: ${isPlaying.value}, segments length: ${lesson.segments.length}');
     
     if (isPlaying.value || index >= lesson.segments.length) {
-      print('❌ Cannot play segment: isPlaying=${isPlaying.value}, index=$index, max=${lesson.segments.length}');
+      print('Cannot play segment: isPlaying=${isPlaying.value}, index=$index, max=${lesson.segments.length}');
       return;
     }
     
@@ -83,7 +83,7 @@ class DictationPlayController extends GetxController {
     try {
       // Force apply speech rate trước khi phát segment
       await TtsService.setSpeechRate(speechRate.value);
-      print('🎯 Playing segment $index: "${lesson.segments[index].text}"');
+      print('Playing segment $index: "${lesson.segments[index].text}"');
       
       // Delay nhỏ để đảm bảo setting được apply
       await Future.delayed(const Duration(milliseconds: 100));
@@ -91,9 +91,9 @@ class DictationPlayController extends GetxController {
       final segment = lesson.segments[index];
       await TtsService.speak(segment.text);
       
-      print('✅ Segment $index completed');
+      print('Segment $index completed');
     } catch (e) {
-      print('❌ DictationPlayController: playSegment error: $e');
+      print('DictationPlayController: playSegment error: $e');
     } finally {
       isPlaying(false);
     }

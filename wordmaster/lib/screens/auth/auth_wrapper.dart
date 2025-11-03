@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../../controllers/auth_controller.dart';
 import 'login_screen.dart';
 import '../main_navigation.dart';
-// wordmaster/lib/screens/auth/auth_wrapper.dart
+
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
@@ -75,15 +75,9 @@ class AuthWrapper extends StatelessWidget {
         );
       }
 
-      // If user is logged in, show main app
-      if (authController.isLoggedIn) {
-        print('User is logged in - showing MainNavigation');
-        return const MainNavigation();
-      }
-
-      // If user is not logged in, show login screen
-      print('User not logged in - showing LoginScreen');
-      return const LoginScreen();
+      // Always show main app - let individual screens handle login requirements
+      print('Showing MainNavigation (guest or logged-in user)');
+      return const MainNavigation();
     });
   }
 }

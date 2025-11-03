@@ -54,10 +54,25 @@ class ProgressController extends GetxController {
       
     } catch (e) {
       print('Error loading progress data: $e');
-      errorMessage('Không thể tải dữ liệu tiến độ');
+      String userFriendlyMessage = 'Không thể tải dữ liệu tiến độ';
+      
+      // Tùy chỉnh message dựa trên loại lỗi
+      if (e.toString().contains('kết nối')) {
+        userFriendlyMessage = 'Lỗi kết nối mạng. Vui lòng thử lại.';
+      } else if (e.toString().contains('User chưa đăng nhập')) {
+        userFriendlyMessage = 'Vui lòng đăng nhập để xem tiến độ';
+      }
+      
+      errorMessage(userFriendlyMessage);
     } finally {
       isLoading(false);
     }
+  }
+
+  // Thêm method để retry load data
+  Future<void> retryLoadData() async {
+    print('Retrying to load progress data...');
+    await loadData();
   }
 
   // Helper methods để lấy dữ liệu cho chart

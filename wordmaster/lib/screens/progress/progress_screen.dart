@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../controllers/progress_controller.dart';
-import '../../../controllers/auth_controller.dart'; // Thêm import AuthController
+import '../../../controllers/auth_controller.dart'; 
 import '../../data/progress_api.dart' as api;
 import '../../../controllers/main_navigation_controller.dart';
-import '../auth/register_screen.dart'; // Sửa đường dẫn import
+import '../auth/register_screen.dart'; 
 //D:\DEMOLTDD\wordmaster\lib\screens\progress\progress_screen.dart
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
@@ -104,12 +104,12 @@ class ProgressScreen extends StatelessWidget {
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  // Chuyển đến tab Profile (tab cuối cùng - index 4)
-                  Get.until((route) => route.isFirst); // Quay về màn hình chính
+                  
+                  Get.until((route) => route.isFirst); 
                   Future.delayed(const Duration(milliseconds: 100), () {
-                    // Sử dụng GetX để chuyển tab
+                  
                     final mainNavigation = Get.find<MainNavigationController>();
-                    mainNavigation.changeTab(4); // Chuyển đến tab Profile
+                    mainNavigation.changeTab(4); 
                   });
                 },
                 style: ElevatedButton.styleFrom(
@@ -269,21 +269,72 @@ class ProgressScreen extends StatelessWidget {
 
   Widget _buildErrorWidget(ProgressController controller) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            controller.errorMessage.value!,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => controller.loadData(),
-            child: const Text('Thử lại'),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.wifi_off_rounded,
+                size: 50,
+                color: Colors.red[400],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Không thể tải dữ liệu tiến độ',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              controller.errorMessage.value ?? 'Có lỗi xảy ra khi tải dữ liệu',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () => controller.retryLoadData(),
+              icon: const Icon(Icons.refresh, size: 20),
+              label: const Text('Thử lại'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFd63384),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () {
+                // Điều hướng về trang chính hoặc làm gì đó khác
+                Get.find<MainNavigationController>().changeTab(0);
+              },
+              child: Text(
+                'Về trang chủ',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -50,7 +50,7 @@ class DictationPlayScreen extends StatelessWidget {
                 
                 // Audio Controls
                 Builder(builder: (context) {
-                  print('🎛️ Building audio controls: isSegmentMode=${controller.isSegmentMode.value}');
+                  print('Building audio controls: isSegmentMode=${controller.isSegmentMode.value}');
                   return !controller.isSegmentMode.value 
                     ? _buildFullAudioControls(controller) 
                     : _buildSegmentControls(controller);
@@ -227,7 +227,7 @@ class DictationPlayScreen extends StatelessWidget {
               icon: Icons.play_circle_outline,
               isSelected: !controller.isSegmentMode.value,
               onTap: () {
-                print('🔄 Setting segment mode to false');
+                print('Setting segment mode to false');
                 controller.isSegmentMode.value = false;
               },
             ),
@@ -238,7 +238,7 @@ class DictationPlayScreen extends StatelessWidget {
               icon: Icons.skip_next,
               isSelected: controller.isSegmentMode.value,
               onTap: () {
-                print('🔄 Setting segment mode to true');
+                print('Setting segment mode to true');
                 controller.isSegmentMode.value = true;
               },
             ),

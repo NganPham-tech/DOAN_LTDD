@@ -34,11 +34,11 @@ class _DictationListScreenState extends State<DictationListScreen> {
         backgroundColor: const Color(0xFFd63384),
         foregroundColor: Colors.white,
         actions: [
-          // Debug button để test load
+          
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              print('🔄 Manual refresh triggered');
+              print('Manual refresh triggered');
               controller.forceLoad();
             },
             tooltip: 'Refresh data',

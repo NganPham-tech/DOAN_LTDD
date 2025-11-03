@@ -53,7 +53,6 @@ class FlashcardStudyController extends GetxController
       flashcards.assignAll(cards);
       updateProgress();
       
-      // Tự động phát âm thẻ đầu tiên nếu là vocabulary
       if (flashcards.isNotEmpty && isVocabulary) {
         Future.delayed(const Duration(milliseconds: 1000), () {
           speakText();
@@ -78,7 +77,7 @@ class FlashcardStudyController extends GetxController
       flipController.reset();
       updateProgress();
       
-      // Tự động phát âm từ mới nếu là vocabulary
+     
       if (isVocabulary) {
         Future.delayed(const Duration(milliseconds: 500), () {
           speakText();
@@ -96,7 +95,7 @@ class FlashcardStudyController extends GetxController
       flipController.reset();
       updateProgress();
       
-      // Tự động phát âm từ nếu là vocabulary
+      
       if (isVocabulary) {
         Future.delayed(const Duration(milliseconds: 500), () {
           speakText();

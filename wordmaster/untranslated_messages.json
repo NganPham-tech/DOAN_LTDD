@@ -1,1 +1,57 @@
-{}
+{
+  "en": [
+    "study_reminder",
+    "study_reminder_title",
+    "add_reminder",
+    "reminder_title",
+    "reminder_description",
+    "select_time",
+    "time",
+    "repeat_daily",
+    "add_reminder_button",
+    "reminder_added",
+    "please_enter_title"
+  ],
+
+  "ja": [
+    "study_reminder",
+    "study_reminder_title",
+    "add_reminder",
+    "reminder_title",
+    "reminder_description",
+    "select_time",
+    "time",
+    "repeat_daily",
+    "add_reminder_button",
+    "reminder_added",
+    "please_enter_title"
+  ],
+
+  "ko": [
+    "study_reminder",
+    "study_reminder_title",
+    "add_reminder",
+    "reminder_title",
+    "reminder_description",
+    "select_time",
+    "time",
+    "repeat_daily",
+    "add_reminder_button",
+    "reminder_added",
+    "please_enter_title"
+  ],
+
+  "zh": [
+    "study_reminder",
+    "study_reminder_title",
+    "add_reminder",
+    "reminder_title",
+    "reminder_description",
+    "select_time",
+    "time",
+    "repeat_daily",
+    "add_reminder_button",
+    "reminder_added",
+    "please_enter_title"
+  ]
+}

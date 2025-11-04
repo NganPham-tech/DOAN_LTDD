@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
+import 'services/notification_service.dart';
 import 'l10n/app_localizations.dart';
 
 import 'firebase_options.dart';
@@ -32,6 +33,10 @@ void main() async {
   } catch (e) {
     print('Warning: Could not load .env file: $e');
   }
+
+  // Initialize notifications
+  final notificationService = NotificationService();
+  await notificationService.initialize();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await TtsService.initialize();
@@ -72,15 +77,15 @@ class MyApp extends StatelessWidget {
           return GetMaterialApp(
             title: 'WordMaster',
             debugShowCheckedModeBanner: false,
-            
+
             // ============================================
             // CẤU HÌNH ĐA NGÔN NGỮ
             // ============================================
             locale: localeProvider.locale,
-            
+
             // Danh sách ngôn ngữ hỗ trợ
             supportedLocales: LocaleProvider.supportedLocales,
-            
+
             // Localization delegates
             localizationsDelegates: const [
               AppLocalizations.delegate,
@@ -88,7 +93,7 @@ class MyApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            
+
             // Locale resolution callback
             localeResolutionCallback: (locale, supportedLocales) {
               // Kiểm tra xem locale hiện tại có được hỗ trợ không
@@ -100,7 +105,7 @@ class MyApp extends StatelessWidget {
               // Nếu không hỗ trợ, trả về locale đầu tiên (mặc định)
               return supportedLocales.first;
             },
-            
+
             // ============================================
             // THEME
             // ============================================
@@ -123,7 +128,7 @@ class MyApp extends StatelessWidget {
                 foregroundColor: Color(0xFF2D3436),
               ),
             ),
-            
+
             home: const AuthWrapper(),
             routes: {
               '/login': (context) => const LoginScreen(),

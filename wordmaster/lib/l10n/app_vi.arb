@@ -150,6 +150,25 @@
   "add": "Thêm",
   "search": "Tìm kiếm",
   "filter": "Lọc",
-  "sort": "Sắp xếp"
+  "sort": "Sắp xếp",
+
+  "study_reminder": "Lịch học",
+  "study_reminder_title": "Lịch nhắc nhở của bạn",
+  "add_reminder": "Thêm lịch nhắc nhở mới",
+  "reminder_title": "Tiêu đề",
+  "reminder_description": "Mô tả",
+  "select_time": "Chọn thời gian",
+  "time": "Thời gian: {time}",
+  "@time": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "repeat_daily": "Lặp lại hàng ngày",
+  "add_reminder_button": "Thêm nhắc nhở",
+  "reminder_added": "Đã thêm lịch nhắc nhở thành công",
+  "please_enter_title": "Vui lòng nhập tiêu đề"
 }
 

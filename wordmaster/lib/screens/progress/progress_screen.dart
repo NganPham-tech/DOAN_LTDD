@@ -3,54 +3,338 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../controllers/progress_controller.dart';
+import '../../../controllers/auth_controller.dart'; 
 import '../../data/progress_api.dart' as api;
-
+import '../../../controllers/main_navigation_controller.dart';
+import '../auth/register_screen.dart'; 
+//D:\DEMOLTDD\wordmaster\lib\screens\progress\progress_screen.dart
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(ProgressController());
+    final progressController = Get.put(ProgressController());
+    final authController = Get.find<AuthController>(); // Lấy AuthController
     
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: Obx(() {
-          if (controller.isLoading.value) {
+          // Kiểm tra nếu chưa đăng nhập
+          if (!authController.isLoggedIn) {
+            return _buildLoginRequiredWidget(authController);
+          }
+          
+          if (progressController.isLoading.value) {
             return const Center(child: CircularProgressIndicator());
           }
           
-          if (controller.errorMessage.value != null) {
-            return _buildErrorWidget(controller);
+          if (progressController.errorMessage.value != null) {
+            return _buildErrorWidget(progressController);
           }
           
-          if (controller.userProgress.value == null) {
+          if (progressController.userProgress.value == null) {
             return const Center(child: Text('Không có dữ liệu'));
           }
           
-          return _buildContent(controller);
+          return _buildContent(progressController);
         }),
+      ),
+    );
+  }
+
+  // Widget hiển thị khi chưa đăng nhập
+  Widget _buildLoginRequiredWidget(AuthController authController) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Icon lớn
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: Colors.blueAccent.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.analytics_outlined,
+                size: 60,
+                color: Colors.blueAccent,
+              ),
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Tiêu đề
+            const Text(
+              'Thống kê học tập',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueAccent,
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Mô tả
+            Text(
+              'Đăng nhập để xem thống kê chi tiết về quá trình học tập của bạn',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            
+            const SizedBox(height: 32),
+            
+            // Các tính năng khi đăng nhập
+            _buildFeatureList(),
+            
+            const SizedBox(height: 40),
+            
+            // Nút đăng nhập
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  
+                  Get.until((route) => route.isFirst); 
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                  
+                    final mainNavigation = Get.find<MainNavigationController>();
+                    mainNavigation.changeTab(4); 
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFd63384),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 4,
+                ),
+                child: const Text(
+                  'Đăng nhập ngay',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Nút đăng ký
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton(
+                onPressed: () {
+                  // Chuyển đến tab Profile và mở màn hình đăng ký
+                  Get.until((route) => route.isFirst);
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    final mainNavigation = Get.find<MainNavigationController>();
+                    mainNavigation.changeTab(4); // Chuyển đến tab Profile
+                    // Giả sử ProfileScreen có thể điều hướng đến RegisterScreen
+                    Get.to(() => const RegisterScreen());
+                  });
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFd63384),
+                  side: const BorderSide(color: Color(0xFFd63384), width: 2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Tạo tài khoản mới',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Danh sách tính năng khi đăng nhập
+  Widget _buildFeatureList() {
+    final features = [
+      {
+        'icon': Icons.timeline,
+        'title': 'Theo dõi tiến độ',
+        'description': 'Xem biểu đồ học tập 7 ngày qua'
+      },
+      {
+        'icon': Icons.emoji_events,
+        'title': 'Thành tích',
+        'description': 'Mở khóa huy hiệu và phần thưởng'
+      },
+      {
+        'icon': Icons.local_fire_department,
+        'title': 'Streak học tập',
+        'description': 'Duy trì chuỗi ngày học liên tiếp'
+      },
+      {
+        'icon': Icons.insights,
+        'title': 'Thống kê chi tiết',
+        'description': 'Phân tích hiệu quả học tập'
+      },
+    ];
+
+    return Column(
+      children: features.map((feature) => _buildFeatureItem(
+        icon: feature['icon'] as IconData,
+        title: feature['title'] as String,
+        description: feature['description'] as String,
+      )).toList(),
+    );
+  }
+
+  Widget _buildFeatureItem({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.blueAccent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.blueAccent,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildErrorWidget(ProgressController controller) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            controller.errorMessage.value!,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => controller.loadData(),
-            child: const Text('Thử lại'),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.wifi_off_rounded,
+                size: 50,
+                color: Colors.red[400],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Không thể tải dữ liệu tiến độ',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              controller.errorMessage.value ?? 'Có lỗi xảy ra khi tải dữ liệu',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () => controller.retryLoadData(),
+              icon: const Icon(Icons.refresh, size: 20),
+              label: const Text('Thử lại'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFd63384),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () {
+                // Điều hướng về trang chính hoặc làm gì đó khác
+                Get.find<MainNavigationController>().changeTab(0);
+              },
+              child: Text(
+                'Về trang chủ',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -366,7 +650,7 @@ class ProgressScreen extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 110, // Giảm xuống từ 120 để tránh overflow
+          height: 110,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: controller.achievements.length,
@@ -387,7 +671,7 @@ class ProgressScreen extends StatelessWidget {
         elevation: achievement.isUnlocked ? 4 : 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
-          padding: const EdgeInsets.all(10), // Giảm xuống từ 12
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             color: achievement.isUnlocked ? Colors.white : Colors.grey[100],
@@ -396,7 +680,7 @@ class ProgressScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.all(6), // Giảm xuống từ 8
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: achievement.isUnlocked
                       ? achievement.color.withOpacity(0.1)
@@ -405,7 +689,7 @@ class ProgressScreen extends StatelessWidget {
                 ),
                 child: Icon(
                   achievement.icon,
-                  size: 20, // Giảm xuống từ 24
+                  size: 20,
                   color: achievement.isUnlocked ? achievement.color : Colors.grey,
                 ),
               ),
@@ -416,7 +700,7 @@ class ProgressScreen extends StatelessWidget {
                     Text(
                       achievement.name,
                       style: TextStyle(
-                        fontSize: 10, // Giảm xuống từ 11
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: achievement.isUnlocked ? Colors.black87 : Colors.grey,
                       ),
@@ -424,17 +708,17 @@ class ProgressScreen extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2), // Giảm xuống từ 4
+                    const SizedBox(height: 2),
                     if (achievement.isUnlocked) ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.star, size: 10, color: Colors.amber), // Giảm size
+                          const Icon(Icons.star, size: 10, color: Colors.amber),
                           const SizedBox(width: 2),
                           Text(
                             '+${achievement.points}',
                             style: const TextStyle(
-                              fontSize: 9, // Giảm xuống từ 10
+                              fontSize: 9,
                               color: Colors.amber,
                             ),
                           ),
@@ -444,7 +728,7 @@ class ProgressScreen extends StatelessWidget {
                       Text(
                         'Chưa mở khóa',
                         style: TextStyle(
-                          fontSize: 9, // Giảm xuống từ 10
+                          fontSize: 9,
                           color: Colors.grey[500],
                         ),
                       ),

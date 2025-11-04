@@ -1,8 +1,9 @@
+// lib/screens/quiz/quiz_screen.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../services/tts_service.dart';
-import '../../providers/quiz_provider.dart';
-import '../../models/quiz_topic.dart';
+import 'package:get/get.dart';
+import '../../../controllers/quiz_controller.dart';
+import '../../../models/quiz_topic.dart';
+import '../../../services/tts_service.dart';
 import 'quiz_result_screen.dart';
 
 class QuizScreen extends StatefulWidget {
@@ -15,6 +16,7 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
+  final QuizController quizController = Get.find<QuizController>();
   int? _selectedAnswer;
   bool _showExplanation = false;
   final TextEditingController _textController = TextEditingController();
@@ -26,7 +28,7 @@ class _QuizScreenState extends State<QuizScreen> {
     // Initialize shared TTS service (singleton)
     TtsService.initialize();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<QuizProvider>(context, listen: false).startQuiz(widget.topic);
+      quizController.startQuiz(widget.topic);
     });
   }
 
@@ -57,138 +59,180 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
         ],
       ),
-      body: Consumer<QuizProvider>(
-        builder: (context, quizProvider, child) {
-          if (quizProvider.isLoading) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading quiz...'),
-                ],
-              ),
-            );
-          }
+      body: Obx(() {
+        if (quizController.isLoading.value) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Loading quiz...'),
+              ],
+            ),
+          );
+        }
 
-          if (quizProvider.error != null) {
-            return Center(
+        if (quizController.error.value != null) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                Text(
+                  'Error loading quiz',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                Text(quizController.error.value!),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => Get.back(),
+                  child: const Text('Go Back'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final currentQuestion = quizController.currentQuestion;
+        if (currentQuestion == null) {
+          return const Center(child: Text('No questions available'));
+        }
+
+        final progress = (quizController.currentQuestionIndex.value + 1) / quizController.currentQuestions.length;
+
+        return Column(
+          children: [
+            // Progress bar
+            Container(
+              padding: const EdgeInsets.all(16),
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error loading quiz',
-                    style: Theme.of(context).textTheme.headlineSmall,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Question ${quizController.currentQuestionIndex.value + 1} of ${quizController.currentQuestions.length}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '${(progress * 100).round()}%',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
-                  Text(quizProvider.error!),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Go Back'),
+                  LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).primaryColor,
+                    ),
                   ),
                 ],
               ),
-            );
-          }
+            ),
 
-          final currentQuestion = quizProvider.currentQuestion;
-          if (currentQuestion == null) {
-            return const Center(child: Text('No questions available'));
-          }
-
-          final progress =
-              (quizProvider.currentQuestionIndex + 1) /
-              quizProvider.currentQuestions.length;
-
-          return Column(
-            children: [
-              // Progress bar
-              Container(
+            // Question content
+            Expanded(
+              child: Padding(
                 padding: const EdgeInsets.all(16),
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Question ${quizProvider.currentQuestionIndex + 1} of ${quizProvider.currentQuestions.length}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
+                    // Question
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _getDifficultyColor(currentQuestion.difficulty),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    currentQuestion.difficulty,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              currentQuestion.question,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          '${(progress * 100).round()}%',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: progress,
-                      backgroundColor: Colors.grey[300],
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).primaryColor,
                       ),
                     ),
-                  ],
-                ),
-              ),
 
-              // Question content
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Question
+                    const SizedBox(height: 20),
+
+                    // Answer options - Different UI based on question type
+                    Expanded(child: _buildAnswerWidget(currentQuestion)),
+
+                    // Explanation (if shown)
+                    if (_showExplanation) ...[
+                      const SizedBox(height: 16),
                       Card(
-                        elevation: 2,
+                        color: Colors.blue[50],
                         child: Padding(
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: _getDifficultyColor(
-                                        currentQuestion.difficulty,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      currentQuestion.difficulty,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  Icon(
+                                    Icons.lightbulb_outline,
+                                    color: Colors.blue[700],
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Explanation',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue[700],
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 8),
                               Text(
-                                currentQuestion.question,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
+                                currentQuestion.explanation,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.blue[800],
                                   height: 1.4,
                                 ),
                               ),
@@ -196,103 +240,55 @@ class _QuizScreenState extends State<QuizScreen> {
                           ),
                         ),
                       ),
-
-                      const SizedBox(height: 20),
-
-                      // Answer options - Different UI based on question type
-                      Expanded(child: _buildAnswerWidget(currentQuestion)),
-
-                      // Explanation (if shown)
-                      if (_showExplanation) ...[
-                        const SizedBox(height: 16),
-                        Card(
-                          color: Colors.blue[50],
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.lightbulb_outline,
-                                      color: Colors.blue[700],
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Explanation',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.blue[700],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  currentQuestion.explanation,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.blue[800],
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
                     ],
-                  ),
+                  ],
                 ),
               ),
+            ),
 
-              // Navigation buttons
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.3),
-                      spreadRadius: 1,
-                      blurRadius: 5,
-                      offset: const Offset(0, -3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    if (quizProvider.currentQuestionIndex > 0)
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: _showExplanation
-                              ? null
-                              : () {
-                                  quizProvider.previousQuestion();
-                                  _resetAnswerState();
-                                },
-                          child: const Text('Previous'),
-                        ),
-                      ),
-                    if (quizProvider.currentQuestionIndex > 0)
-                      const SizedBox(width: 16),
-                    Expanded(
-                      flex: 2,
-                      child: ElevatedButton(
-                        onPressed: _selectedAnswer == null ? null : _handleNext,
-                        child: Text(_getNextButtonText(quizProvider)),
-                      ),
-                    ),
-                  ],
-                ),
+            // Navigation buttons
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: const Offset(0, -3),
+                  ),
+                ],
               ),
-            ],
-          );
-        },
-      ),
+              child: Row(
+                children: [
+                  if (quizController.currentQuestionIndex.value > 0)
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _showExplanation
+                            ? null
+                            : () {
+                                quizController.previousQuestion();
+                                _resetAnswerState();
+                              },
+                        child: const Text('Previous'),
+                      ),
+                    ),
+                  if (quizController.currentQuestionIndex.value > 0)
+                    const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      onPressed: _selectedAnswer == null ? null : _handleNext,
+                      child: Text(_getNextButtonText()),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 
@@ -300,7 +296,7 @@ class _QuizScreenState extends State<QuizScreen> {
     setState(() {
       _selectedAnswer = index;
     });
-    Provider.of<QuizProvider>(context, listen: false).answerQuestion(index);
+    quizController.answerQuestion(index);
   }
 
   Widget _buildAnswerWidget(QuizQuestion question) {
@@ -386,8 +382,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 _userTextAnswer = value;
                 // Auto-select answer when user types
                 if (value.trim().isNotEmpty) {
-                  _selectedAnswer =
-                      0; // Dummy selection to enable Submit button
+                  _selectedAnswer = 0; // Dummy selection to enable Submit button
                 }
               });
             },
@@ -498,8 +493,7 @@ class _QuizScreenState extends State<QuizScreen> {
           ],
 
           // First letter hint
-          if (question.firstLetter != null &&
-              question.firstLetter!.isNotEmpty) ...[
+          if (question.firstLetter != null && question.firstLetter!.isNotEmpty) ...[
             Text(
               'First letter: ${question.firstLetter}',
               style: TextStyle(
@@ -532,8 +526,7 @@ class _QuizScreenState extends State<QuizScreen> {
               setState(() {
                 _userTextAnswer = value;
                 if (value.trim().isNotEmpty) {
-                  _selectedAnswer =
-                      0; // Dummy selection to enable Submit button
+                  _selectedAnswer = 0; // Dummy selection to enable Submit button
                 }
               });
             },
@@ -624,8 +617,7 @@ class _QuizScreenState extends State<QuizScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color:
-                                _selectedAnswer == question.correctAnswerIndex
+                            color: _selectedAnswer == question.correctAnswerIndex
                                 ? Colors.green[700]
                                 : Colors.red[700],
                           ),
@@ -655,23 +647,20 @@ class _QuizScreenState extends State<QuizScreen> {
 
   void _handleNext() {
     if (!_showExplanation) {
-      final quizProvider = Provider.of<QuizProvider>(context, listen: false);
-      final currentQuestion = quizProvider.currentQuestion;
+      final currentQuestion = quizController.currentQuestion;
 
       if (currentQuestion != null) {
         // For text-based answers (Listening, FillInBlank)
         if (currentQuestion.questionType == 'Listening') {
           // Check if user's answer matches the audio text
           final correctAnswer = currentQuestion.audioText ?? '';
-          final isCorrect =
-              _userTextAnswer.trim().toLowerCase() ==
-              correctAnswer.trim().toLowerCase();
+          final isCorrect = _userTextAnswer.trim().toLowerCase() == correctAnswer.trim().toLowerCase();
 
           // Submit the answer (0 for correct, -1 for incorrect)
-          quizProvider.answerQuestion(isCorrect ? 0 : -1);
+          quizController.answerQuestion(isCorrect ? 0 : -1);
         } else if (currentQuestion.questionType == 'FillInBlank') {
           // Answer already selected via _selectedAnswer
-          quizProvider.answerQuestion(_selectedAnswer ?? -1);
+          quizController.answerQuestion(_selectedAnswer ?? -1);
         }
         // MultipleChoice already handled by _selectAnswer
       }
@@ -680,8 +669,7 @@ class _QuizScreenState extends State<QuizScreen> {
         _showExplanation = true;
       });
     } else {
-      final quizProvider = Provider.of<QuizProvider>(context, listen: false);
-      final hasNext = quizProvider.nextQuestion();
+      final hasNext = quizController.nextQuestion();
 
       if (hasNext) {
         _resetAnswerState();
@@ -701,22 +689,16 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _finishQuiz() {
-    final quizProvider = Provider.of<QuizProvider>(context, listen: false);
-    final result = quizProvider.getQuizResult();
-
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => QuizResultScreen(result: result)),
-    );
+    final result = quizController.getQuizResult();
+    Get.off(() => QuizResultScreen(result: result));
   }
 
-  String _getNextButtonText(QuizProvider quizProvider) {
+  String _getNextButtonText() {
     if (!_showExplanation) {
       return 'Submit Answer';
     }
 
-    final isLast =
-        quizProvider.currentQuestionIndex ==
-        quizProvider.currentQuestions.length - 1;
+    final isLast = quizController.currentQuestionIndex.value == quizController.currentQuestions.length - 1;
     return isLast ? 'Finish Quiz' : 'Next Question';
   }
 
@@ -734,23 +716,22 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _showQuitDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+    Get.dialog(
+      AlertDialog(
         title: const Text('Quit Quiz?'),
         content: const Text(
           'Are you sure you want to quit? Your progress will be lost.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Get.back(),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(); // Close dialog
-              Navigator.of(context).pop(); // Close quiz
-              Provider.of<QuizProvider>(context, listen: false).endQuiz();
+              Get.back(); // Close dialog
+              Get.back(); // Close quiz
+              quizController.endQuiz();
             },
             child: const Text('Quit'),
           ),

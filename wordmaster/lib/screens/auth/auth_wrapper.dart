@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../../controllers/auth_controller.dart';
 import 'login_screen.dart';
 import '../main_navigation.dart';
-// wordmaster/lib/screens/auth/auth_wrapper.dart
+
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
@@ -13,15 +13,15 @@ class AuthWrapper extends StatelessWidget {
     final authController = Get.find<AuthController>();
 
     return Obx(() {
-      print('🔄 AuthWrapper Obx rebuilding...');
-      print('👤 authController.isLoggedIn: ${authController.isLoggedIn}');
-      print('👤 currentUser: ${authController.currentUser.value?.email}');
-      print('⏳ isLoading: ${authController.isLoading.value}');
-      print('❌ error: ${authController.error.value}');
+      print('AuthWrapper Obx rebuilding...');
+      print('authController.isLoggedIn: ${authController.isLoggedIn}');
+      print('currentUser: ${authController.currentUser.value?.email}');
+      print('IsLoading: ${authController.isLoading.value}');
+      print('error: ${authController.error.value}');
       
       // Show loading spinner while checking authentication state
       if (authController.isLoading.value) {
-        print('⏳ Showing loading spinner');
+        print('Showing loading spinner');
         return const Scaffold(
           body: Center(
             child: CircularProgressIndicator(
@@ -33,7 +33,7 @@ class AuthWrapper extends StatelessWidget {
 
       // Show error if there's an authentication error
       if (authController.error.value != null) {
-        print('❌ Showing error screen');
+        print('Showing error screen');
         return Scaffold(
           body: Center(
             child: Column(
@@ -75,15 +75,9 @@ class AuthWrapper extends StatelessWidget {
         );
       }
 
-      // If user is logged in, show main app
-      if (authController.isLoggedIn) {
-        print('✅ User is logged in - showing MainNavigation');
-        return const MainNavigation();
-      }
-
-      // If user is not logged in, show login screen
-      print('🔑 User not logged in - showing LoginScreen');
-      return const LoginScreen();
+      // Always show main app - let individual screens handle login requirements
+      print('Showing MainNavigation (guest or logged-in user)');
+      return const MainNavigation();
     });
   }
 }

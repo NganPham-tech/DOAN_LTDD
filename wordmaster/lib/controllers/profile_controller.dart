@@ -47,20 +47,20 @@ class ProfileController extends GetxController {
         return;
       }
 
-      print('🔄 Loading profile for Firebase UID: $firebaseUid');
+      print('Loading profile for Firebase UID: $firebaseUid');
 
       final response = await http.get(
         Uri.parse('$baseUrl/users/profile?firebaseUid=$firebaseUid'),
       ).timeout(const Duration(seconds: 10));
 
-      print('✅ Profile API response: ${response.statusCode}');
+      print('Profile API response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true) {
           apiData(data['data']);
           errorMessage(null);
-          print('✅ Profile data loaded successfully');
+          print('Profile data loaded successfully');
         } else {
           errorMessage(data['message'] ?? 'Lỗi không xác định');
         }
@@ -81,20 +81,20 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Phương thức để lấy firebaseUid từ AuthController (GetX)
+  
   String? _getFirebaseUidFromContext() {
     try {
-      // Lấy từ AuthController thay vì hardcode
+     
       final firebaseUid = authController.firebaseUid;
-      print('🔍 Getting Firebase UID from AuthController: $firebaseUid');
+      print('Getting Firebase UID from AuthController: $firebaseUid');
       return firebaseUid;
     } catch (e) {
-      print('❌ Error getting firebaseUid from AuthController: $e');
+      print('Error getting firebaseUid from AuthController: $e');
       return null;
     }
   }
 
-  // Helper methods để lấy dữ liệu từ apiData
+ 
   Map<String, dynamic>? get userData => apiData['user'] as Map<String, dynamic>?;
   Map<String, dynamic>? get progressData => apiData['progress'] as Map<String, dynamic>?;
   Map<String, dynamic>? get learningSummaryData => apiData['learningSummary'] as Map<String, dynamic>?;

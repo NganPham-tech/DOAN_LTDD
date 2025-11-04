@@ -20,8 +20,11 @@ import 'services/tts_service.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/progress_controller.dart';
 import 'controllers/flashcard_overview_controller.dart';
-
+import 'controllers/quiz_controller.dart';
+import 'controllers/main_navigation_controller.dart';
+import 'controllers/home_controller.dart';
 /// wordmaster/lib/main.dart
+/// 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -43,12 +46,15 @@ void main() async {
   Get.put(SettingsProvider(), permanent: true);
   Get.put(QuizProvider(), permanent: true);
   Get.put(LocaleProvider(), permanent: true);
-
+  Get.put(MainNavigationController(), permanent: true);
   // Đăng ký AuthController
   Get.put(AuthController(), permanent: true);
   Get.put(ProgressController(), permanent: true);
   Get.put(FlashcardOverviewController(), permanent: true);
+  Get.put(QuizController(), permanent: true);
+  Get.put(HomeController());
   runApp(const MyApp());
+
 }
 
 class MyApp extends StatelessWidget {

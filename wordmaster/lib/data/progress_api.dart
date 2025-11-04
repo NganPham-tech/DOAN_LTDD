@@ -2,41 +2,68 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../controllers/auth_controller.dart';
+import '../models/user.dart' as models;
 
 class ProgressAPI {
-  static const String baseUrl = 'http://10.0.2.2:8080';
+  // Dynamic baseUrl based on platform
+  static String get baseUrl {
+    // For Android emulator use 10.0.2.2
+    // For iOS simulator and real devices use localhost or actual IP
+    return 'http://10.0.2.2:8080';
+    // Alternative: return 'http://localhost:8080';
+    // Or use your computer's IP: return 'http://192.168.x.x:8080';
+  }
+  
+  static const Duration timeoutDuration = Duration(seconds: 15); // Increase timeout
+  static const int maxRetries = 3;
 
-  // Lấy tất cả dữ liệu cho trang Progress
+  // Lấy tất cả dữ liệu cho trang Progress với retry logic
   static Future<Map<String, dynamic>> getAllProgressData(int userId) async {
-    try {
-      final url = '$baseUrl/progress/user?userId=$userId';
-      print('Calling API: $url');
-      
-      final response = await http.get(
-        Uri.parse(url),
-      );
-
-      print('API Response Status: ${response.statusCode}');
-      print('API Response Body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print('Parsed JSON data: $data');
+    int retryCount = 0;
+    
+    while (retryCount < maxRetries) {
+      try {
+        final url = '$baseUrl/progress/user?userId=$userId';
+        print('Calling API (attempt ${retryCount + 1}/$maxRetries): $url');
         
-        final result = data['data'] as Map<String, dynamic>;
-        print('Returning data: $result');
+        final response = await http.get(
+          Uri.parse(url),
+        ).timeout(timeoutDuration);
+
+        print('API Response Status: ${response.statusCode}');
+        print('API Response Body: ${response.body}');
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          print('Parsed JSON data: $data');
+          
+          final result = data['data'] as Map<String, dynamic>;
+          print('Returning data: $result');
+          
+          return result;
+        } else {
+          throw Exception('API returned status ${response.statusCode}');
+        }
+      } catch (e) {
+        retryCount++;
+        print('Error on attempt $retryCount: $e');
         
-        return result;
-      } else {
-        throw Exception('Failed to fetch progress: ${response.statusCode}');
+        if (retryCount >= maxRetries) {
+          print('Max retries reached. Throwing error.');
+          throw Exception('Không thể kết nối đến server sau $maxRetries lần thử. Vui lòng kiểm tra kết nối mạng.');
+        }
+        
+        // Đợi trước khi retry
+        await Future.delayed(Duration(seconds: retryCount * 2));
       }
-    } catch (e) {
-      print('Error fetching progress data: $e');
-      rethrow;
     }
+    
+    throw Exception('Unexpected error in getAllProgressData');
   }
 
-  // Wrapper methods để tương thích với code cũ
+
   static Future<UserProgress> getUserProgress() async {
     final userId = await _getUserId();
     final data = await getAllProgressData(userId);
@@ -65,13 +92,30 @@ class ProgressAPI {
     return achievements.map((item) => Achievement.fromJson(item)).toList();
   }
 
-  // Helper: Lấy userId (bạn cần implement theo cách của bạn)
+  // Helper: Lấy userId từ AuthController
   static Future<int> _getUserId() async {
-    // TODO: Lấy từ SharedPreferences hoặc Provider/Riverpod
-    // Ví dụ:
-    // final prefs = await SharedPreferences.getInstance();
-    // return prefs.getInt('userId') ?? 0;
-    return 2; // UserID = 2 (user thường), UserID = 1 là admin
+    try {
+      final authController = Get.find<AuthController>();
+      
+      if (!authController.isLoggedIn) {
+        throw Exception('User chưa đăng nhập');
+      }
+      
+      
+      final user = authController.currentUser.value as models.User?;
+      if (user == null || user.userID == null) {
+        throw Exception('Không thể lấy thông tin user');
+      }
+      
+      final userId = user.userID!;
+      print('Retrieved userId from auth: $userId');
+      return userId;
+    } catch (e) {
+      print('Error getting userId: $e');
+      // Fallback về userId = 2 để test
+      print('Using fallback userId = 2');
+      return 2;
+    }
   }
 }
 

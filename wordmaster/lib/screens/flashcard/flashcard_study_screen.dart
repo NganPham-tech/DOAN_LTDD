@@ -80,10 +80,10 @@ class FlashcardStudyScreen extends StatelessWidget {
                   builder: (context, child) {
                     final angle = controller.flipController.value * 3.14159;
                     
-                    // Hiển thị mặt trước khi góc nhỏ hơn 90 độ (pi/2)
+                    
                     final showFront = angle < 1.5708;
                     
-                    // Tạo transform với góc xoay phù hợp
+                    
                     final transform = Matrix4.identity()
                       ..setEntry(3, 2, 0.001)
                       ..rotateY(showFront ? angle : angle - 3.14159);

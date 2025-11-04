@@ -11,16 +11,16 @@ class DictationListController extends GetxController
   late TabController tabController;
 
   DictationListController() {
-    print('🏗️ DictationListController: Constructor called');
+    print('DictationListController: Constructor called');
   }
 
   @override
   void onInit() {
     super.onInit();
-    print('🚀 DictationListController: onInit called');
+    print('DictationListController: onInit called');
     tabController = TabController(length: 4, vsync: this);
     
-    // Delay để đảm bảo widget đã mounted
+   
     Future.delayed(const Duration(milliseconds: 100), () {
       loadLessons();
     });
@@ -29,43 +29,42 @@ class DictationListController extends GetxController
   @override
   void onReady() {
     super.onReady();
-    print('✅ DictationListController: onReady called');
+    print('DictationListController: onReady called');
     
-    // Backup: Nếu onInit không load được data, thử lại ở đây
+   
     if (allLessons.isEmpty && !isLoading.value) {
-      print('🔄 DictationListController: onReady backup load');
+      print('DictationListController: onReady backup load');
       loadLessons();
     }
   }
 
-  // Method để force reload nếu cần
   void forceLoad() {
-    print('🔧 DictationListController: forceLoad called');
+    print('DictationListController: forceLoad called');
     loadLessons();
   }
 
   Future<void> loadLessons() async {
     try {
       isLoading(true);
-      print('🔄 DictationListController: Bắt đầu tải lessons...');
+      print('DictationListController: Bắt đầu tải lessons...');
       
       final lessons = await DictationService.getAllLessons();
-      print('✅ DictationListController: Tải được ${lessons.length} lessons');
+      print('DictationListController: Tải được ${lessons.length} lessons');
       
       allLessons.assignAll(lessons);
       
-      // Debug: In ra lessons đầu tiên để kiểm tra
+      
       if (lessons.isNotEmpty) {
-        print('📝 First lesson: ${lessons.first.title}');
+        print('First lesson: ${lessons.first.title}');
       }
       
     } catch (e) {
-      print('❌ DictationListController error: $e');
+      print('DictationListController error: $e');
       
-      // Fallback: Tạo sample data để test UI
+      
       final sampleLessons = _createSampleLessons();
       allLessons.assignAll(sampleLessons);
-      print('🔧 Sử dụng sample data: ${sampleLessons.length} lessons');
+      print('Sử dụng sample data: ${sampleLessons.length} lessons');
       
       Get.snackbar(
         'Lỗi',

@@ -97,16 +97,16 @@ class SimpleFirebaseUserProvider with ChangeNotifier {
 
   // Logout user
   Future<void> logout() async {
-    print('👋 Logging out...');
+    print('Logging out...');
     _setLoading(true);
     _error = null;
 
     try {
       await _authService.signOut();
       _currentUser = null;
-      print('✅ Logout successful');
+      print('Logout successful');
     } catch (e) {
-      print('❌ Logout failed: $e');
+      print('Logout failed: $e');
       _error = 'Lỗi khi đăng xuất: $e';
     } finally {
       _setLoading(false);
@@ -115,16 +115,16 @@ class SimpleFirebaseUserProvider with ChangeNotifier {
 
   // Send password reset email
   Future<bool> sendPasswordResetEmail(String email) async {
-    print('📧 Sending password reset email...');
+    print('Sending password reset email...');
     _setLoading(true);
     _error = null;
 
     try {
       await _authService.sendPasswordResetEmail(email);
-      print('✅ Password reset email sent');
+      print('Password reset email sent');
       return true;
     } catch (e) {
-      print('❌ Password reset email failed: $e');
+      print('Password reset email failed: $e');
       _error = e.toString();
       return false;
     } finally {

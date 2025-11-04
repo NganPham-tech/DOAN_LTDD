@@ -1,220 +1,320 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import '../flashcard/flashcard_overview_screen.dart';
-import '../dictation/dictation_list_screen.dart';
-import '/providers/simple_firebase_user_provider.dart';
-import '/services/api_service.dart';
+import '../../controllers/home_controller.dart';
+import '../../controllers/auth_controller.dart';
 
-//D:\DEMOLTDD\wordmaster\lib\screens\home\home_screen.dart
-
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends GetView<HomeController> {
   const HomeScreen({super.key});
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  bool _isLoading = true;
-  
-  Map<String, dynamic> _userProgress = {
-    'todayLearned': 0,
-    'dailyGoal': 20,
-    'currentStreak': 0,
-    'totalPoints': 0,
-    'progressPercentage': 0,
-  };
-
-  List<Map<String, dynamic>> _recommendedDecks = [];
-  List<Map<String, dynamic>> _recentActivities = [];
-  Map<String, dynamic> _statistics = {
-    'cardsToReview': 0,
-    'todayLearned': 0,
-  };
-  
-  // 🆕 THÊM BIẾN CHO FLASHCARD OF THE DAY
-  Map<String, dynamic> _todayFlashcard = {};
-
-  final List<Map<String, dynamic>> _quickActions = [
-    {'icon': Icons.flash_on, 'label': 'Flashcard', 'badge': 0},
-    {'icon': Icons.repeat, 'label': 'Ôn tập', 'badge': 5},
-    {'icon': Icons.quiz, 'label': 'Quiz', 'badge': 0},
-    {'icon': Icons.mic, 'label': 'Dictation', 'badge': 0},
-    {'icon': Icons.record_voice_over, 'label': 'Shadowing', 'badge': 0},
-    {'icon': Icons.menu_book, 'label': 'Grammar', 'badge': 2},
-  ];
-
-
-
-  @override
-  void initState() {
-    super.initState();
-    _loadHomeData();
-  }
-
-  Future<void> _loadHomeData() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final userProvider = Provider.of<SimpleFirebaseUserProvider>(
-        context,
-        listen: false,
-      );
-
-      if (!userProvider.isLoggedIn) {
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      final firebaseUid = userProvider.currentUser?.id;
-      
-      // Sử dụng ApiService với userId=2 cho dữ liệu người dùng
-      final data = await ApiService.get('/users/home?firebaseUid=$firebaseUid');
-      
-      print('Home API response: Success');
-
-      if (data['success'] == true) {
-        setState(() {
-          _userProgress = Map<String, dynamic>.from(
-            data['data']['userProgress'] ?? {}
-          );
-          _recommendedDecks = List<Map<String, dynamic>>.from(
-            data['data']['recommendedDecks'] ?? []
-          );
-          _recentActivities = List<Map<String, dynamic>>.from(
-            data['data']['recentActivities'] ?? []
-          );
-          _statistics = Map<String, dynamic>.from(
-            data['data']['statistics'] ?? {}
-          );
-          // 🆕 PARSE FLASHCARD OF THE DAY
-          _todayFlashcard = Map<String, dynamic>.from(
-            data['data']['todayFlashcard'] ?? {}
-          );
-          _isLoading = false;
-        });
-        print('Home data loaded successfully');
-      }
-    } catch (e) {
-      print('Error loading home data: $e');
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
+  AuthController get authController => Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.grey[50],
-        body: const Center(
-          child: CircularProgressIndicator(
-            color: Color(0xFFd63384),
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(
-        child: RefreshIndicator(
-          color: const Color(0xFFd63384),
-          onRefresh: _loadHomeData,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-                _buildHeader(),
-                const SizedBox(height: 16),
-                _buildSearchBar(),
-                const SizedBox(height: 24),
-                _buildProgressCard(),
-                const SizedBox(height: 24),
-                
-                // 🆕 FLASHCARD OF THE DAY
-                if (_todayFlashcard.isNotEmpty) ...[
-                  _buildFlashcardOfTheDay(),
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFFd63384),
+              ),
+            );
+          }
+
+          return RefreshIndicator(
+            color: const Color(0xFFd63384),
+            onRefresh: () => controller.loadHomeData(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  _buildHeader(),
+                  const SizedBox(height: 16),
+                  _buildSearchBar(),
                   const SizedBox(height: 24),
+                  _buildProgressCard(),
+                  const SizedBox(height: 24),
+                  
+                  // FLASHCARD OF THE DAY
+                  if (controller.todayFlashcard.isNotEmpty) ...[
+                    _buildFlashcardOfTheDay(),
+                    const SizedBox(height: 24),
+                  ],
+                  
+                  _buildQuickActions(),
+                  const SizedBox(height: 32),
+                  _buildRecommendedSection(),
+                  const SizedBox(height: 32),
+                  _buildRecentActivity(),
+                  const SizedBox(height: 32),
                 ],
-                
-                _buildQuickActions(),
-                const SizedBox(height: 32),
-                _buildRecommendedSection(),
-                const SizedBox(height: 32),
-                _buildRecentActivity(),
-                const SizedBox(height: 32),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        }),
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Row(
-      children: [
-        Row(
-          children: [
-            Image.asset(
-              'images/Bannerapp.png',
-              width: 40,
-              height: 40,
-            ),
-            const SizedBox(width: 8),
-            Column(
+    return Obx(() => Container(
+      padding: const EdgeInsets.all(20),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFd63384), Color(0xFFf8d7da)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'WordMaster',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFd63384),
+                
+                if (authController.isLoggedIn) ...[
+                  const Text(
+                    'Xin chào!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-                Text(
-                  'Học từ vựng dễ — Nhớ lâu hơn mỗi ngày',
+                  Text(
+                    authController.currentUser.value?.fullName ?? 'Người dùng',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ] else ...[
+                  const Text(
+                    'Chào mừng đến với',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const Text(
+                    'WordMaster',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 8),
+                const Text(
+                  'Hôm nay bạn muốn học gì?',
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
+                    color: Colors.white70,
+                    fontSize: 14,
                   ),
                 ),
               ],
             ),
-          ],
-        ),
-        const Spacer(),
-        Row(
-          children: [
-            IconButton(
-              icon: Badge(
-                label: Text('${_statistics['cardsToReview'] ?? 0}'),
-                isLabelVisible: (_statistics['cardsToReview'] ?? 0) > 0,
-                child: Icon(Icons.notifications, color: Colors.grey[600]),
-              ),
-              onPressed: () {},
-            ),
+          ),
+          
+          if (authController.isLoggedIn) ...[
             CircleAvatar(
-              radius: 18,
-              backgroundColor: const Color(0xFFd63384),
+              radius: 25,
+              backgroundColor: Colors.white.withOpacity(0.2),
               child: const Icon(
                 Icons.person,
                 color: Colors.white,
-                size: 20,
+                size: 30,
+              ),
+            ),
+          ] else ...[
+            ElevatedButton(
+              onPressed: () => Get.toNamed('/login'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFFd63384),
+              ),
+              child: const Text('Đăng nhập'),
+            ),
+          ],
+        ],
+      ),
+    ));
+  }
+
+  Widget _buildProgressCard() {
+    
+    if (!authController.isLoggedIn) {
+      return Card(
+        margin: const EdgeInsets.all(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const Icon(
+                Icons.login,
+                size: 48,
+                color: Color(0xFFd63384),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Đăng nhập để xem tiến độ học tập',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Theo dõi kết quả học tập và lưu tiến độ cá nhân',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => Get.toNamed('/login'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFd63384),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Đăng nhập ngay'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Code hiện tại cho user đã đăng nhập
+    return Obx(() {
+      final todayLearned = controller.userProgress['todayLearned'] ?? 0;
+      final dailyGoal = controller.userProgress['dailyGoal'] ?? 20;
+      final progress = dailyGoal > 0 ? todayLearned / dailyGoal : 0.0;
+      
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFd63384), Color(0xFFa61e4d)],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFd63384).withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Tiến độ hôm nay',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white.withOpacity(0.8),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text(
+                  '$todayLearned/$dailyGoal từ',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.local_fire_department, color: Colors.orange, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Streak: ${controller.userProgress['currentStreak'] ?? 0} ngày',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Stack(
+              children: [
+                Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                FractionallySizedBox(
+                  widthFactor: progress.clamp(0.0, 1.0),
+                  child: Container(
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.5),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Get.to(() => const FlashcardOverviewScreen());
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFFd63384),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Ôn tập ngay',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
               ),
             ),
           ],
         ),
-      ],
-    );
+      );
+    });
   }
 
   Widget _buildSearchBar() {
@@ -232,6 +332,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       child: TextField(
+        onTap: () {
+          // Navigate to dedicated search screen
+          _showSearchBottomSheet();
+        },
+        readOnly: true, // Make it read-only so it acts like a button
         decoration: InputDecoration(
           hintText: 'Tìm từ, chủ đề hoặc bài học...',
           border: InputBorder.none,
@@ -242,138 +347,197 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildProgressCard() {
-    final todayLearned = _userProgress['todayLearned'] ?? 0;
-    final dailyGoal = _userProgress['dailyGoal'] ?? 20;
-    final progress = dailyGoal > 0 ? todayLearned / dailyGoal : 0.0;
-    
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFd63384), Color(0xFFa61e4d)],
+  void _showSearchBottomSheet() {
+    Get.bottomSheet(
+      Container(
+        height: Get.height * 0.8,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFd63384).withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Tiến độ hôm nay',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white.withOpacity(0.8),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Text(
-                '$todayLearned/$dailyGoal từ',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  const Text(
+                    'Tìm kiếm',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Get.back(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+            ),
+            // Search field
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                autofocus: true,
+                onSubmitted: (value) => _performSearch(value),
+                onChanged: (value) => _performSearch(value),
+                decoration: InputDecoration(
+                  hintText: 'Nhập từ khóa tìm kiếm...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
               ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
+            ),
+            const SizedBox(height: 16),
+            // Search suggestions or results
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.local_fire_department, color: Colors.orange, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Streak: ${_userProgress['currentStreak'] ?? 0} ngày',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
+                    const Text(
+                      'Gợi ý tìm kiếm',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildSearchChip('IELTS Vocabulary'),
+                        _buildSearchChip('TOEIC Vocabulary'),
+                        _buildSearchChip('Basic English'),
+                        _buildSearchChip('English Grammar'),
+                        _buildSearchChip('Daily Conversations'),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Danh mục phổ biến',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ListTile(
+                      leading: const Icon(Icons.flash_on, color: Color(0xFFd63384)),
+                      title: const Text('Flashcard'),
+                      subtitle: const Text('Học từ vựng bằng thẻ ghi nhớ'),
+                      onTap: () {
+                        Get.back();
+                        Get.to(() => const FlashcardOverviewScreen());
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.quiz, color: Color(0xFFd63384)),
+                      title: const Text('Quiz'),
+                      subtitle: const Text('Kiểm tra kiến thức qua câu hỏi'),
+                      onTap: () {
+                        Get.back();
+                        controller.handleFeatureNavigation('Quiz');
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.mic, color: Color(0xFFd63384)),
+                      title: const Text('Dictation'),
+                      subtitle: const Text('Luyện nghe và viết chính tả'),
+                      onTap: () {
+                        Get.back();
+                        controller.handleFeatureNavigation('Dictation');
+                      },
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Stack(
-            children: [
-              Container(
-                height: 8,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              FractionallySizedBox(
-                widthFactor: progress.clamp(0.0, 1.0),
-                child: Container(
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(4),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.5),
-                        blurRadius: 4,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const FlashcardOverviewScreen(),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFFd63384),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Ôn tập ngay',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  Widget _buildSearchChip(String label) {
+    return GestureDetector(
+      onTap: () {
+        Get.back();
+        _performSearch(label);
+      },
+      child: Chip(
+        label: Text(label),
+        backgroundColor: const Color(0xFFd63384).withOpacity(0.1),
+        labelStyle: const TextStyle(
+          color: Color(0xFFd63384),
+          fontSize: 12,
+        ),
       ),
     );
   }
 
-  // 🆕 FLASHCARD OF THE DAY WIDGET
+  void _performSearch(String query) {
+    if (query.trim().isEmpty) return;
+    
+    print('Searching for: $query');
+    
+    // Navigate based on search query
+    if (query.toLowerCase().contains('flashcard') || 
+        query.toLowerCase().contains('vocabulary') ||
+        query.toLowerCase().contains('từ vựng')) {
+      Get.back();
+      Get.to(() => const FlashcardOverviewScreen());
+    } else if (query.toLowerCase().contains('quiz') || 
+               query.toLowerCase().contains('kiểm tra')) {
+      Get.back();
+      controller.handleFeatureNavigation('Quiz');
+    } else if (query.toLowerCase().contains('dictation') || 
+               query.toLowerCase().contains('chính tả')) {
+      Get.back();
+      controller.handleFeatureNavigation('Dictation');
+    } else {
+      // Default to flashcard overview for any other search
+      Get.back();
+      Get.to(() => const FlashcardOverviewScreen());
+      
+      // Show search result message
+      Get.snackbar(
+        'Kết quả tìm kiếm',
+        'Tìm thấy nội dung liên quan đến "$query"',
+        backgroundColor: const Color(0xFFd63384),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+    }
+  }
+
   Widget _buildFlashcardOfTheDay() {
-    return Container(
+    return Obx(() => Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -434,17 +598,17 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _todayFlashcard['question'] ?? '',
+                  controller.todayFlashcard['question'] ?? '',
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF2D3436),
                   ),
                 ),
-                if (_todayFlashcard['phonetic'] != null) ...[
+                if (controller.todayFlashcard['phonetic'] != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    _todayFlashcard['phonetic'],
+                    controller.todayFlashcard['phonetic'],
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
@@ -460,7 +624,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    _todayFlashcard['answer'] ?? '',
+                    controller.todayFlashcard['answer'] ?? '',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[800],
@@ -468,7 +632,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                if (_todayFlashcard['example'] != null) ...[
+                if (controller.todayFlashcard['example'] != null) ...[
                   const SizedBox(height: 12),
                   Text(
                     'Ví dụ:',
@@ -480,7 +644,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _todayFlashcard['example'],
+                    controller.todayFlashcard['example'],
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[700],
@@ -493,16 +657,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: double.infinity,
                   child: TextButton.icon(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const FlashcardOverviewScreen(),
-                        ),
-                      );
+                      Get.to(() => const FlashcardOverviewScreen());
                     },
                     icon: const Icon(Icons.arrow_forward_rounded, size: 18),
                     label: Text(
-                      'Học từ deck "${_todayFlashcard['deckName'] ?? 'Unknown'}"',
+                      'Học từ deck "${controller.todayFlashcard['deckName'] ?? 'Unknown'}"',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     style: TextButton.styleFrom(
@@ -516,13 +675,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildQuickActions() {
-    // Cập nhật badge từ statistics
-    _quickActions[1]['badge'] = _statistics['cardsToReview'] ?? 0;
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -538,14 +694,15 @@ class _HomeScreenState extends State<HomeScreen> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
+            crossAxisCount: 2,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
             childAspectRatio: 0.9,
           ),
-          itemCount: _quickActions.length,
+          itemCount: controller.quickActions.length,
           itemBuilder: (context, index) {
-            final action = _quickActions[index];
+            final action = controller.quickActions[index];
+            
             return _buildActionTile(
               icon: action['icon'] as IconData,
               label: action['label'] as String,
@@ -563,7 +720,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required int badge,
   }) {
     return GestureDetector(
-      onTap: () => _handleFeatureNavigation(label),
+      onTap: () => controller.handleFeatureNavigation(label),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -599,31 +756,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _handleFeatureNavigation(String feature) {
-    switch (feature) {
-      case 'Flashcard':
-      case 'Ôn tập':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const FlashcardOverviewScreen()),
-        );
-        break;
-      case 'Dictation':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const DictationListScreen()),
-        );
-        break;
-      default:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Tính năng $feature đang phát triển'),
-            backgroundColor: const Color(0xFFd63384),
-          ),
-        );
-    }
-  }
-
   Widget _buildRecommendedSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -636,7 +768,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        _recommendedDecks.isEmpty
+        Obx(() => controller.recommendedDecks.isEmpty
             ? Container(
                 height: 160,
                 decoration: BoxDecoration(
@@ -654,12 +786,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 160,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: _recommendedDecks.length,
+                  itemCount: controller.recommendedDecks.length,
                   itemBuilder: (context, index) {
-                    return _buildDeckCard(_recommendedDecks[index]);
+                    return _buildDeckCard(controller.recommendedDecks[index]);
                   },
                 ),
               ),
+        ),
       ],
     );
   }
@@ -736,6 +869,38 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentActivity() {
+    // Chỉ hiển thị cho user đã đăng nhập
+    if (!authController.isLoggedIn) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              const Icon(
+                Icons.history,
+                size: 48,
+                color: Color(0xFFd63384),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Đăng nhập để xem hoạt động gần đây',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Theo dõi lịch sử học tập và các thành tích đã đạt được',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -752,7 +917,7 @@ class _HomeScreenState extends State<HomeScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: _recentActivities.isEmpty
+          child: Obx(() => controller.recentActivities.isEmpty
               ? Padding(
                   padding: const EdgeInsets.all(24),
                   child: Center(
@@ -763,7 +928,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 )
               : Column(
-                  children: _recentActivities
+                  children: controller.recentActivities
                       .map((activity) => _buildActivityItem(
                             activity['activity'] ?? '',
                             activity['timeAgo'] ?? '',
@@ -771,6 +936,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ))
                       .toList(),
                 ),
+          ),
         ),
       ],
     );

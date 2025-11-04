@@ -1,11 +1,11 @@
-// lib/data/user_api.dart
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class UserAPI {
-  static const String baseUrl = 'http://10.0.2.2:8080'; // Thay bằng URL API của bạn
+  static const String baseUrl = 'http://10.0.2.2:8080'; 
 
-  // Đồng bộ Firebase user vào database
+  
   static Future<Map<String, dynamic>> syncUser({
     required String firebaseUid,
     required String email,
@@ -36,7 +36,7 @@ class UserAPI {
     }
   }
 
-  // Lấy profile user bằng Firebase UID
+ 
   static Future<Map<String, dynamic>> getUserProfile({
     String? firebaseUid,
     int? userId,
@@ -69,7 +69,7 @@ class UserAPI {
   }
 }
 
-// Model cho User Profile
+
 class UserProfile {
   final int userId;
   final String? firebaseUid;

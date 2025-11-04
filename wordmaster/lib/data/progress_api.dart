@@ -7,19 +7,17 @@ import '../controllers/auth_controller.dart';
 import '../models/user.dart' as models;
 
 class ProgressAPI {
-  // Dynamic baseUrl based on platform
+  
   static String get baseUrl {
-    // For Android emulator use 10.0.2.2
-    // For iOS simulator and real devices use localhost or actual IP
+    
     return 'http://10.0.2.2:8080';
-    // Alternative: return 'http://localhost:8080';
-    // Or use your computer's IP: return 'http://192.168.x.x:8080';
+   
   }
   
-  static const Duration timeoutDuration = Duration(seconds: 15); // Increase timeout
+  static const Duration timeoutDuration = Duration(seconds: 15); 
   static const int maxRetries = 3;
 
-  // Lấy tất cả dữ liệu cho trang Progress với retry logic
+  
   static Future<Map<String, dynamic>> getAllProgressData(int userId) async {
     int retryCount = 0;
     
@@ -92,7 +90,7 @@ class ProgressAPI {
     return achievements.map((item) => Achievement.fromJson(item)).toList();
   }
 
-  // Helper: Lấy userId từ AuthController
+
   static Future<int> _getUserId() async {
     try {
       final authController = Get.find<AuthController>();
@@ -112,7 +110,7 @@ class ProgressAPI {
       return userId;
     } catch (e) {
       print('Error getting userId: $e');
-      // Fallback về userId = 2 để test
+    
       print('Using fallback userId = 2');
       return 2;
     }

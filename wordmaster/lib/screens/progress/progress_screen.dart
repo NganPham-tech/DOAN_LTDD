@@ -14,13 +14,13 @@ class ProgressScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progressController = Get.put(ProgressController());
-    final authController = Get.find<AuthController>(); // Lấy AuthController
+    final authController = Get.find<AuthController>(); 
     
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: Obx(() {
-          // Kiểm tra nếu chưa đăng nhập
+          
           if (!authController.isLoggedIn) {
             return _buildLoginRequiredWidget(authController);
           }
@@ -43,7 +43,7 @@ class ProgressScreen extends StatelessWidget {
     );
   }
 
-  // Widget hiển thị khi chưa đăng nhập
+
   Widget _buildLoginRequiredWidget(AuthController authController) {
     return Center(
       child: Padding(
@@ -98,7 +98,7 @@ class ProgressScreen extends StatelessWidget {
             
             const SizedBox(height: 40),
             
-            // Nút đăng nhập
+            
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -138,12 +138,12 @@ class ProgressScreen extends StatelessWidget {
               height: 50,
               child: OutlinedButton(
                 onPressed: () {
-                  // Chuyển đến tab Profile và mở màn hình đăng ký
+                  
                   Get.until((route) => route.isFirst);
                   Future.delayed(const Duration(milliseconds: 100), () {
                     final mainNavigation = Get.find<MainNavigationController>();
-                    mainNavigation.changeTab(4); // Chuyển đến tab Profile
-                    // Giả sử ProfileScreen có thể điều hướng đến RegisterScreen
+                    mainNavigation.changeTab(4);
+                    
                     Get.to(() => const RegisterScreen());
                   });
                 },
@@ -322,7 +322,7 @@ class ProgressScreen extends StatelessWidget {
             const SizedBox(height: 16),
             TextButton(
               onPressed: () {
-                // Điều hướng về trang chính hoặc làm gì đó khác
+                
                 Get.find<MainNavigationController>().changeTab(0);
               },
               child: Text(

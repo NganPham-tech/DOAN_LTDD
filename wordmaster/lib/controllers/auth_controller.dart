@@ -16,7 +16,7 @@ class AuthController extends GetxController {
   // Getters
   bool get isLoggedIn {
     final loggedIn = currentUser.value != null;
-    print('🔍 isLoggedIn getter called: $loggedIn (currentUser: ${currentUser.value?.email})');
+    print('isLoggedIn getter called: $loggedIn (currentUser: ${currentUser.value?.email})');
     return loggedIn;
   }
   String? get userEmail => currentUser.value?.email;
@@ -26,7 +26,7 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    print('🚀 AuthController initialized');
+    print('AuthController initialized');
     
     // Listen to Firebase auth state changes
     _authService.authStateChanges.listen(_onAuthStateChanged);
@@ -34,13 +34,13 @@ class AuthController extends GetxController {
 
   @override
   void onClose() {
-    print('👋 AuthController disposed');
+    print('AuthController disposed');
     super.onClose();
   }
 
-  /// Handle Firebase auth state changes
+  
   void _onAuthStateChanged(firebase_auth.User? firebaseUser) async {
-    print('🔄 Auth state changed: ${firebaseUser?.email}');
+    print('Auth state changed: ${firebaseUser?.email}');
     
     if (firebaseUser != null) {
       // User is signed in
@@ -63,7 +63,7 @@ class AuthController extends GetxController {
     }
   }
 
-  // ==================== REGISTER ====================
+  
   
   /// Register new user with Firebase
   Future<bool> register({
@@ -74,7 +74,7 @@ class AuthController extends GetxController {
     String? phone,
   }) async {
     try {
-      print('📝 Starting registration...');
+      print('Starting registration...');
       isLoading.value = true;
       error.value = null;
 
@@ -85,8 +85,8 @@ class AuthController extends GetxController {
       );
 
       if (userCredential?.user != null) {
-        print('✅ Registration successful');
-        print('📝 Firebase UID: ${userCredential!.user!.uid}');
+        print('Registration successful');
+        print('Firebase UID: ${userCredential!.user!.uid}');
         
         Get.snackbar(
           'Thành công',
@@ -102,7 +102,7 @@ class AuthController extends GetxController {
       
       return false;
     } catch (e) {
-      print('❌ Registration failed: $e');
+      print('Registration failed: $e');
       error.value = _parseFirebaseError(e.toString());
       
       Get.snackbar(
@@ -128,7 +128,7 @@ class AuthController extends GetxController {
     required String password,
   }) async {
     try {
-      print('🔑 Starting login...');
+      print('Starting login...');
       isLoading.value = true;
       error.value = null;
 
@@ -138,8 +138,8 @@ class AuthController extends GetxController {
       );
 
       if (userCredential?.user != null) {
-        print('✅ Login successful');
-        print('📝 Firebase UID: ${userCredential!.user!.uid}');
+        print('Login successful');
+        print('Firebase UID: ${userCredential!.user!.uid}');
         
         // Manually update currentUser immediately after successful login
         currentUser.value = models.User(
@@ -151,8 +151,8 @@ class AuthController extends GetxController {
           avatar: '',
         );
         
-        print('✅ currentUser.value updated manually');
-        print('🏠 isLoggedIn: ${isLoggedIn}');
+        print('currentUser.value updated manually');
+        print('isLoggedIn: ${isLoggedIn}');
         
         // Set loading to false immediately
         isLoading.value = false;
@@ -174,7 +174,7 @@ class AuthController extends GetxController {
       
       return false;
     } catch (e) {
-      print('❌ Login failed: $e');
+      print('Login failed: $e');
       error.value = _parseFirebaseError(e.toString());
       
       Get.snackbar(
@@ -196,14 +196,14 @@ class AuthController extends GetxController {
   /// Logout current user
   Future<void> logout() async {
     try {
-      print('👋 Logging out...');
+      print('Logging out...');
       isLoading.value = true;
       error.value = null;
 
       await _authService.signOut();
       currentUser.value = null;
       
-      print('✅ Logout successful');
+      print('Logout successful');
       
       Get.snackbar(
         'Đăng xuất',
@@ -214,7 +214,7 @@ class AuthController extends GetxController {
         duration: const Duration(seconds: 2),
       );
     } catch (e) {
-      print('❌ Logout failed: $e');
+      print('Logout failed: $e');
       error.value = 'Lỗi khi đăng xuất: $e';
       
       Get.snackbar(
@@ -234,13 +234,13 @@ class AuthController extends GetxController {
   /// Send password reset email
   Future<bool> sendPasswordResetEmail(String email) async {
     try {
-      print('📧 Sending password reset email...');
+      print('Sending password reset email...');
       isLoading.value = true;
       error.value = null;
 
       await _authService.sendPasswordResetEmail(email);
       
-      print('✅ Password reset email sent');
+      print('Password reset email sent');
       
       Get.snackbar(
         'Thành công',
@@ -253,7 +253,7 @@ class AuthController extends GetxController {
       
       return true;
     } catch (e) {
-      print('❌ Password reset email failed: $e');
+      print('Password reset email failed: $e');
       error.value = _parseFirebaseError(e.toString());
       
       Get.snackbar(

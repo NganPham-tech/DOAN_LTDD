@@ -58,7 +58,7 @@ class QuizController extends GetxController {
       userAnswers.clear();
       quizStartTime = DateTime.now();
 
-      // Lấy câu hỏi từ MySQL API
+     
       final questions = await QuizAPI.getQuestions(topic.id);
       currentQuestions.assignAll(questions);
       error.value = null;

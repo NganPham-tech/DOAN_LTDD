@@ -73,15 +73,13 @@ class MyApp extends StatelessWidget {
             title: 'WordMaster',
             debugShowCheckedModeBanner: false,
             
-            // ============================================
-            // CẤU HÌNH ĐA NGÔN NGỮ
-            // ============================================
+         
             locale: localeProvider.locale,
             
-            // Danh sách ngôn ngữ hỗ trợ
+        
             supportedLocales: LocaleProvider.supportedLocales,
             
-            // Localization delegates
+           
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
@@ -89,21 +87,18 @@ class MyApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             
-            // Locale resolution callback
+          
             localeResolutionCallback: (locale, supportedLocales) {
-              // Kiểm tra xem locale hiện tại có được hỗ trợ không
+              
               for (var supportedLocale in supportedLocales) {
                 if (supportedLocale.languageCode == locale?.languageCode) {
                   return supportedLocale;
                 }
               }
-              // Nếu không hỗ trợ, trả về locale đầu tiên (mặc định)
+            
               return supportedLocales.first;
             },
-            
-            // ============================================
-            // THEME
-            // ============================================
+         
             theme: ThemeData(
               primaryColor: const Color(0xFFd63384),
               primaryColorDark: const Color(0xFFa61e4d),

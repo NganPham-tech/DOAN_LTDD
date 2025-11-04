@@ -41,7 +41,7 @@ class ProgressController extends GetxController {
       print('Activities loaded: ${activities.length} items');
       print('Achievements loaded: ${achievementsData.length} items');
       
-      // Debug: Check if cardsLearned values are actually non-zero
+      
       final cardValues = weekly.map((e) => e.cardsLearned).toList();
       final quizValues = weekly.map((e) => e.quizzesCompleted).toList();
       print('Cards learned values: $cardValues');
@@ -56,7 +56,7 @@ class ProgressController extends GetxController {
       print('Error loading progress data: $e');
       String userFriendlyMessage = 'Không thể tải dữ liệu tiến độ';
       
-      // Tùy chỉnh message dựa trên loại lỗi
+      
       if (e.toString().contains('kết nối')) {
         userFriendlyMessage = 'Lỗi kết nối mạng. Vui lòng thử lại.';
       } else if (e.toString().contains('User chưa đăng nhập')) {

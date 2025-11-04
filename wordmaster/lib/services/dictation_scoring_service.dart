@@ -1,8 +1,8 @@
-// lib/services/dictation_scoring_service.dart
+
 import '../models/dictation.dart';
 
 class DictationScoringService {
-  /// Chấm điểm dictation và trả về kết quả chi tiết
+  
   static DictationResult scoreText({
     required int lessonId,
     required String userInput,
@@ -82,7 +82,7 @@ class DictationScoringService {
     return comparisons;
   }
 
-  /// Đếm số ký tự khớp (dùng Levenshtein distance để tính accuracy)
+  
   static int _countMatchingChars(String s1, String s2) {
     if (s1.isEmpty || s2.isEmpty) return 0;
 
@@ -93,7 +93,7 @@ class DictationScoringService {
     return matchingChars > 0 ? matchingChars : 0;
   }
 
-  /// Tính Levenshtein distance (số lượng thay đổi tối thiểu để biến s1 thành s2)
+ 
   static int _levenshteinDistance(String s1, String s2) {
     if (s1.isEmpty) return s2.length;
     if (s2.isEmpty) return s1.length;
@@ -144,7 +144,7 @@ class DictationScoringService {
     return result.wordAccuracy.round();
   }
 
-  /// Phân tích lỗi thường gặp
+  
   static Map<String, int> analyzeErrors(DictationResult result) {
     final errors = <String, int>{
       'missing_words': 0, // Thiếu từ
@@ -170,7 +170,7 @@ class DictationScoringService {
     return errors;
   }
 
-  /// Kiểm tra 2 từ có giống nhau không (cho phép 1-2 ký tự sai)
+ 
   static bool _isSimilar(String word1, String word2) {
     if (word1.length < 3 || word2.length < 3) return false;
 

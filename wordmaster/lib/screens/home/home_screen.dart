@@ -191,7 +191,7 @@ class HomeScreen extends GetView<HomeController> {
       );
     }
 
-    // Code hiện tại cho user đã đăng nhập
+    
     return Obx(() {
       final todayLearned = controller.userProgress['todayLearned'] ?? 0;
       final dailyGoal = controller.userProgress['dailyGoal'] ?? 20;
@@ -333,10 +333,10 @@ class HomeScreen extends GetView<HomeController> {
       ),
       child: TextField(
         onTap: () {
-          // Navigate to dedicated search screen
+          
           _showSearchBottomSheet();
         },
-        readOnly: true, // Make it read-only so it acts like a button
+        readOnly: true, 
         decoration: InputDecoration(
           hintText: 'Tìm từ, chủ đề hoặc bài học...',
           border: InputBorder.none,
@@ -360,7 +360,7 @@ class HomeScreen extends GetView<HomeController> {
         ),
         child: Column(
           children: [
-            // Handle bar
+           
             Container(
               margin: const EdgeInsets.only(top: 8),
               width: 40,
@@ -411,7 +411,7 @@ class HomeScreen extends GetView<HomeController> {
               ),
             ),
             const SizedBox(height: 16),
-            // Search suggestions or results
+            
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -506,7 +506,7 @@ class HomeScreen extends GetView<HomeController> {
     
     print('Searching for: $query');
     
-    // Navigate based on search query
+    
     if (query.toLowerCase().contains('flashcard') || 
         query.toLowerCase().contains('vocabulary') ||
         query.toLowerCase().contains('từ vựng')) {
@@ -521,7 +521,7 @@ class HomeScreen extends GetView<HomeController> {
       Get.back();
       controller.handleFeatureNavigation('Dictation');
     } else {
-      // Default to flashcard overview for any other search
+      
       Get.back();
       Get.to(() => const FlashcardOverviewScreen());
       

@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 import '../models/dictation.dart';
 
 class DictationService {
-  static const String baseUrl = 'http://10.0.2.2:8080'; // Android emulator IP
+  static const String baseUrl = 'http://10.0.2.2:8080'; 
   
-  // Lấy danh sách bài dictation
+  
   static Future<List<DictationLesson>> getAllLessons() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/dictation'));
@@ -23,7 +23,7 @@ class DictationService {
     }
   }
   
-  // Lấy bài dictation theo level
+  
   static Future<List<DictationLesson>> getLessonsByLevel(DictationLevel level) async {
     try {
       final difficulty = level.toString().split('.').last;
@@ -44,7 +44,7 @@ class DictationService {
     }
   }
   
-  // Lấy chi tiết một bài
+
   static Future<DictationLesson> getLessonById(int id) async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/dictation/$id'));

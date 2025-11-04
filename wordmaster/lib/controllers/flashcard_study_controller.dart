@@ -163,8 +163,8 @@ class FlashcardStudyController extends GetxController
         actions: [
           TextButton(
             onPressed: () {
-              Get.back(); // Close dialog
-              Get.back(); // Navigate back
+              Get.back(); 
+              Get.back(); 
             },
             child: const Text('OK'),
           ),

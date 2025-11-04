@@ -34,7 +34,7 @@ class HomeController extends GetxController {
       isLoading(true);
       
       if (!authController.isLoggedIn) {
-        // Load public data for guest users
+        
         await _loadPublicData();
         isLoading(false);
         return;
@@ -42,7 +42,7 @@ class HomeController extends GetxController {
 
       final firebaseUid = authController.firebaseUid;
       
-      // Load user-specific data for logged-in users
+      
       final data = await ApiService.get('/users/home?firebaseUid=$firebaseUid');
       
       print('Home API response: Success');
@@ -75,12 +75,12 @@ class HomeController extends GetxController {
 
   Future<void> _loadPublicData() async {
     try {
-      // Load public recommended decks (không cần authentication)
+      
       final categoriesData = await ApiService.get('/categories');
       if (categoriesData['success'] == true) {
         final categories = List<Map<String, dynamic>>.from(categoriesData['data'] ?? []);
         
-        // Convert categories to recommended decks format
+        
         recommendedDecks.assignAll(categories.take(4).map((category) => {
           'title': category['Name'] ?? 'Unknown Category',
           'cardsCount': category['DeckCount'] ?? 0,
@@ -88,7 +88,7 @@ class HomeController extends GetxController {
         }).toList());
       }
       
-      // Set default public data
+      
       userProgress.assignAll({
         'todayLearned': 0,
         'dailyGoal': 20,

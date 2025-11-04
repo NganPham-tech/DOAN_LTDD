@@ -51,14 +51,14 @@ class DictationPlayController extends GetxController {
     playCount.value++;
     
     try {
-      // Force apply speech rate trước khi phát
+      
       await TtsService.setSpeechRate(speechRate.value);
       print('Speaking text: "${lesson.fullTranscript}"');
       
-      // Delay nhỏ để đảm bảo setting được apply
+     
       await Future.delayed(const Duration(milliseconds: 100));
       
-      // Sử dụng TTS để đọc transcript
+   
       await TtsService.speak(lesson.fullTranscript);
       
     } catch (e) {
@@ -81,7 +81,7 @@ class DictationPlayController extends GetxController {
     currentSegmentIndex.value = index;
     
     try {
-      // Force apply speech rate trước khi phát segment
+      
       await TtsService.setSpeechRate(speechRate.value);
       print('Playing segment $index: "${lesson.segments[index].text}"');
       
@@ -120,7 +120,7 @@ class DictationPlayController extends GetxController {
       return;
     }
     
-    // Tính điểm sử dụng DictationScoringService
+
     final result = DictationScoringService.scoreText(
       lessonId: lesson.id,
       userInput: userInput,
@@ -130,7 +130,7 @@ class DictationPlayController extends GetxController {
           : 0,
     );
     
-    // Chuyển đến màn hình kết quả
+
     Get.off(() => DictationResultScreen(result: result));
   }
 
